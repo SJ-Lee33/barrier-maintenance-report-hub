@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: barrier-report-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: barrier_report
+      POSTGRES_USER: local_user
+      POSTGRES_PASSWORD: local_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

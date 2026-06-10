@@ -1,0 +1,36 @@
+# macOS
+.DS_Store
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# Gradle
+.gradle/
+build/
+
+# Java
+*.class
+*.jar
+*.war
+*.ear
+
+# Spring Boot
+logs/
+*.log
+
+# Environment variables
+.env
+.env.*
+application-local.yml
+application-local.properties
+
+# OS / Editor
+.vscode/
+*.swp
+
+# Docker local volumes or temp files
+docker-data/
