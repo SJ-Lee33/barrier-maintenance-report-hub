@@ -62,6 +62,7 @@ SUBMITTED → REJECTED → RESUBMITTED
 | devices | 장비 정보 (시리얼번호, 위치, 모델명) |
 | error_types | 오류 유형 코드 테이블 |
 | repair_reports | 핵심 테이블. 리포트 본문, 상태, 처리 시간 |
+| report_error_types | 리포트와 오류 유형의 다대다 연결 테이블 |
 | report_images | 리포트에 첨부된 이미지 메타데이터 |
 | report_status_histories | 상태 변경 이력 (변경자, 사유, 시각) |
 | report_exports | export 이력 (형식, 파일 URL, 실행자) |
@@ -77,28 +78,75 @@ SUBMITTED → REJECTED → RESUBMITTED
 
 **devices**
 - id, serial_no, location, model_name, installed_at
+```text
+user_id는 users.id를 참조
+user_id는 unique 제약을 가진다. 하나의 user는 하나의 technician 프로필만 가질 수 있다.
+emp_no는 unique 제약을 가진다.
+```
 
 **repair_reports**
-- id, technician_id, device_id, error_type_id
+- id, technician_id, device_id
 - title, description, repair_action
 - status, occurred_at, repaired_at
 - created_at, updated_at
+```text
+technician_id는 technicians.id를 참조
+device_id는 devices.id를 참조
+```
 
 **report_images**
 - id, report_id, image_url, image_type, uploaded_at
+```text
+report_id는 repair_reports.id를 참조
+```
 
 **error_types**
 - id, code, name, description
-- 실제 리포트에는 한 리포트에 에러타입이 여러개 등록될 수 있으니 DB 관리에 유의
+```text
+운영 중 새로운 오류 유형은 error_types 테이블에 추가하는 방식으로 확장
+```
+
+**report_error_types**
+- id, report_id, error_type_id
+- created_at, updated_at
+```text
+< 하나의 repair_report에 여러 error_type을 연결하기 위한 중간 테이블 >
+report_id는 repair_reports.id를 참조
+error_type_id는 error_types.id를 참조
+같은 리포트에 같은 오류 유형이 중복 저장되지 않도록 report_id, error_type_id 조합에 unique 제약을 둔다.
+```
 
 **report_status_histories**
 - id, report_id, from_status, to_status, changed_by, reason, changed_at
+```text
+report_id는 repair_reports.id를 참조
+changed_by는 users.id를 참조
+```
 
 **report_exports**
 - id, report_id, export_type, exported_by, exported_at, file_url
-
+```text
+report_id는 repair_reports.id를 참조
+exported_by는 users.id를 참조
+```
 </details>
 
+
+## 관계 요약
+```
+users 1 ── 1 technicians
+
+technicians 1 ── N repair_reports
+
+devices 1 ── N repair_reports
+
+repair_reports 1 ── N report_error_types
+error_types 1 ── N report_error_types
+
+repair_reports 1 ── N report_images
+repair_reports 1 ── N report_status_histories
+repair_reports 1 ── N report_exports
+```
 ---
 
 ## API 명세 (주요 엔드포인트)
