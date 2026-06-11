@@ -58,4 +58,18 @@ public class Device extends BaseTimeEntity {
 		this.modelName = modelName;
 		this.installedAt = installedAt;
 	}
+
+	public void update(String location, String modelName, LocalDateTime installedAt) {
+		if (location != null) {
+			this.location = location;
+		}
+
+		if (modelName != null) {
+			this.modelName = modelName;
+		}
+
+		if (installedAt != null) {
+			this.installedAt = installedAt;
+		}
+	}
 }

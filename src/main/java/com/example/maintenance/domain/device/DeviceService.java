@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.maintenance.domain.device.dto.DeviceCreateRequest;
 import com.example.maintenance.domain.device.dto.DeviceResponse;
+import com.example.maintenance.domain.device.dto.DeviceUpdateRequest;
 
 import lombok.RequiredArgsConstructor;
 
@@ -47,5 +48,27 @@ public class DeviceService {
 			.orElseThrow(() -> new IllegalArgumentException("장비를 찾을 수 없습니다."));
 
 		return DeviceResponse.from(device);
+	}
+
+	@Transactional
+	public DeviceResponse updateDevice(Long deviceId, DeviceUpdateRequest request) {
+		Device device = deviceRepository.findById(deviceId)
+			.orElseThrow(() -> new IllegalArgumentException("장비를 찾을 수 없습니다."));
+
+		device.update(
+			request.location(),
+			request.modelName(),
+			request.installedAt()
+		);
+
+		return DeviceResponse.from(device);
+	}
+
+	@Transactional
+	public void deleteDevice(Long deviceId) {
+		Device device = deviceRepository.findById(deviceId)
+			.orElseThrow(() -> new IllegalArgumentException("장비를 찾을 수 없습니다."));
+
+		deviceRepository.delete(device);
 	}
 }
