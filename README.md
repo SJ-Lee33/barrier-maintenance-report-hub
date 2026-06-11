@@ -73,7 +73,7 @@ SUBMITTED → REJECTED → RESUBMITTED
 - id, name, email, password, role, created_at
 
 **technicians**
-- id, user_id, phone, department, employee_no
+- id, user_id, phone, department, emp_no
 
 **devices**
 - id, serial_number, location, model_name, installed_at
