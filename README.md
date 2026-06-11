@@ -89,6 +89,7 @@ SUBMITTED → REJECTED → RESUBMITTED
 
 **error_types**
 - id, code, name, description
+- 실제 리포트에는 한 리포트에 에러타입이 여러개 등록될 수 있으니 DB 관리에 유의
 
 **report_status_histories**
 - id, report_id, from_status, to_status, changed_by, reason, changed_at
