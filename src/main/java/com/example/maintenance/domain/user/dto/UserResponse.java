@@ -1,0 +1,21 @@
+package com.example.maintenance.domain.user.dto;
+
+import com.example.maintenance.domain.user.User;
+import com.example.maintenance.domain.user.UserRole;
+
+public record UserResponse(
+	Long id,
+	String name,
+	String email,
+	UserRole role
+) {
+
+	public static UserResponse from(User user) {
+		return new UserResponse(
+			user.getId(),
+			user.getName(),
+			user.getEmail(),
+			user.getRole()
+		);
+	}
+}
