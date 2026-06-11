@@ -76,7 +76,7 @@ SUBMITTED → REJECTED → RESUBMITTED
 - id, user_id, phone, department, emp_no
 
 **devices**
-- id, serial_number, location, model_name, installed_at
+- id, serial_no, location, model_name, installed_at
 
 **repair_reports**
 - id, technician_id, device_id, error_type_id
