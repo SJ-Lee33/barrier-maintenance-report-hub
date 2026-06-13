@@ -198,4 +198,13 @@ public class RepairReport extends BaseTimeEntity {
 		this.status = ReportStatus.REJECTED;
 	}
 
+	// 반려 후 재제출
+	public void resubmit() {
+		if (this.status != ReportStatus.REJECTED) {
+			throw new IllegalStateException("재제출할 수 없는 상태입니다.");
+			// 반려된 것만 재제출 가능
+		}
+
+		this.status = ReportStatus.RESUBMITTED;
+	}
 }
