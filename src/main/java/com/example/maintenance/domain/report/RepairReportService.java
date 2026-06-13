@@ -9,9 +9,12 @@ import com.example.maintenance.domain.device.Device;
 import com.example.maintenance.domain.device.DeviceRepository;
 import com.example.maintenance.domain.errortype.ErrorType;
 import com.example.maintenance.domain.errortype.ErrorTypeRepository;
+import com.example.maintenance.domain.export.ReportExport;
+import com.example.maintenance.domain.export.ReportExportRepository;
 import com.example.maintenance.domain.history.ReportStatusHistory;
 import com.example.maintenance.domain.history.ReportStatusHistoryRepository;
 import com.example.maintenance.domain.report.dto.RepairReportCreateRequest;
+import com.example.maintenance.domain.report.dto.RepairReportExportRequest;
 import com.example.maintenance.domain.report.dto.RepairReportResponse;
 import com.example.maintenance.domain.report.dto.RepairReportUpdateRequest;
 import com.example.maintenance.domain.report.dto.ReportErrorTypeResponse;
@@ -35,6 +38,7 @@ public class RepairReportService {
 	private final ErrorTypeRepository errorTypeRepository;
 	private final ReportStatusHistoryRepository reportStatusHistoryRepository;
 	private final UserRepository userRepository;
+	private final ReportExportRepository reportExportRepository;
 
 	@Transactional
 	public RepairReportResponse createRepairReport(RepairReportCreateRequest request) {
@@ -242,6 +246,43 @@ public class RepairReportService {
 		ReportStatus fromStatus = repairReport.getStatus();
 
 		repairReport.reviewing();
+
+		ReportStatusHistory history = new ReportStatusHistory(
+			repairReport,
+			fromStatus,
+			repairReport.getStatus(),
+			changedBy,
+			request.reason()
+		);
+
+		reportStatusHistoryRepository.save(history);
+
+		return toResponse(repairReport);
+	}
+
+	@Transactional
+	public RepairReportResponse exportRepairReport(
+		Long reportId,
+		RepairReportExportRequest request
+	) {
+		RepairReport repairReport = repairReportRepository.findByIdAndDeletedFalse(reportId)
+			.orElseThrow(() -> new IllegalArgumentException("리포트를 찾을 수 없습니다."));
+
+		User changedBy = userRepository.findById(request.changedByUserId())
+			.orElseThrow(() -> new IllegalArgumentException("Export 실행자를 찾을 수 없습니다."));
+
+		ReportStatus fromStatus = repairReport.getStatus();
+
+		repairReport.export(changedBy);
+
+		ReportExport reportExport = new ReportExport(
+			repairReport,
+			request.exportType(),
+			changedBy,
+			request.fileUrl()
+		);
+
+		reportExportRepository.save(reportExport);
 
 		ReportStatusHistory history = new ReportStatusHistory(
 			repairReport,

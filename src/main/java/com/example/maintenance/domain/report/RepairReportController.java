@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.maintenance.domain.report.dto.RepairReportCreateRequest;
+import com.example.maintenance.domain.report.dto.RepairReportExportRequest;
 import com.example.maintenance.domain.report.dto.RepairReportResponse;
 import com.example.maintenance.domain.report.dto.RepairReportUpdateRequest;
 import com.example.maintenance.domain.report.dto.ReportStatusChangeRequest;
@@ -120,6 +121,16 @@ public class RepairReportController {
 		@Valid @RequestBody ReportStatusChangeRequest request
 	) {
 		RepairReportResponse response = repairReportService.reviewingRepairReport(reportId, request);
+
+		return ResponseEntity.ok(response);
+	}
+
+	@PostMapping("/{reportId}/export")
+	public ResponseEntity<RepairReportResponse> exportRepairReport(
+		@PathVariable Long reportId,
+		@Valid @RequestBody RepairReportExportRequest request
+	) {
+		RepairReportResponse response = repairReportService.exportRepairReport(reportId, request);
 
 		return ResponseEntity.ok(response);
 	}

@@ -216,4 +216,15 @@ public class RepairReport extends BaseTimeEntity {
 
 		this.status = ReportStatus.REVIEWING;
 	}
+
+	// 내보내기
+	public void export(User exportedBy) {
+		if (this.status != ReportStatus.APPROVED) {
+			throw new IllegalStateException("승인된 리포트만 내보내기할 수 있습니다.");
+		}
+
+		this.status = ReportStatus.EXPORTED;
+		this.exportedAt = LocalDateTime.now();
+		this.exportedBy = exportedBy;
+	}
 }
