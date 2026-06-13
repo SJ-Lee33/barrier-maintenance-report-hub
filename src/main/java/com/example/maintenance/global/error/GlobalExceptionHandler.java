@@ -1,5 +1,6 @@
 package com.example.maintenance.global.error;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -55,6 +56,23 @@ public class GlobalExceptionHandler {
 			HttpStatus.BAD_REQUEST.value(),
 			HttpStatus.BAD_REQUEST.getReasonPhrase(),
 			exception.getMessage(),
+			request.getRequestURI()
+		);
+
+		return ResponseEntity
+			.status(HttpStatus.BAD_REQUEST)
+			.body(response);
+	}
+
+	@ExceptionHandler(DataIntegrityViolationException.class)
+	public ResponseEntity<ErrorResponse> handleDataIntegrityViolationException(
+		DataIntegrityViolationException exception,
+		HttpServletRequest request
+	) {
+		ErrorResponse response = ErrorResponse.of(
+			HttpStatus.BAD_REQUEST.value(),
+			HttpStatus.BAD_REQUEST.getReasonPhrase(),
+			"이미 존재하는 값이거나 제약 조건을 위반했습니다.",
 			request.getRequestURI()
 		);
 

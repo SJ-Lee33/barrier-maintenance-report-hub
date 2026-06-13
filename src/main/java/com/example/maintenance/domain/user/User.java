@@ -10,13 +10,22 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
 @Entity // DB 테이블과 연결
-@Table(name = "users")
+@Table(
+	name = "users",
+	uniqueConstraints = {
+		@UniqueConstraint(
+			name = "uk_users_name_phone",
+			columnNames = {"name", "phone"}
+		)
+	}
+) // 중복방지키 : 이름 + 전화번호 조합
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User extends BaseTimeEntity {
 
@@ -30,6 +39,9 @@ public class User extends BaseTimeEntity {
 	@Column(nullable = false, unique = true, length = 100)
 	private String email;
 
+	@Column(nullable = false, length = 20)
+	private String phone;
+
 	@Column(nullable = false)
 	private String password;
 
@@ -37,9 +49,10 @@ public class User extends BaseTimeEntity {
 	@Column(nullable = false, length = 20)
 	private UserRole role;
 
-	public User(String name, String email, String password, UserRole role) {
+	public User(String name, String email, String phone, String password, UserRole role) {
 		this.name = name;
 		this.email = email;
+		this.phone = phone;
 		this.password = password;
 		this.role = role;
 	}
