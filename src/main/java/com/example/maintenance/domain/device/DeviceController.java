@@ -17,9 +17,11 @@ import com.example.maintenance.domain.device.dto.DeviceCreateRequest;
 import com.example.maintenance.domain.device.dto.DeviceResponse;
 import com.example.maintenance.domain.device.dto.DeviceUpdateRequest;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+@Tag(name = "Device API", description = "주차차단기 장비 등록, 조회, 수정, 삭제 API")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/devices")
