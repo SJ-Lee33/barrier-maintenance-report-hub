@@ -17,7 +17,9 @@ import com.example.maintenance.domain.report.dto.RepairReportCreateRequest;
 import com.example.maintenance.domain.report.dto.RepairReportExportRequest;
 import com.example.maintenance.domain.report.dto.RepairReportResponse;
 import com.example.maintenance.domain.report.dto.RepairReportUpdateRequest;
+import com.example.maintenance.domain.report.dto.ReportExportResponse;
 import com.example.maintenance.domain.report.dto.ReportStatusChangeRequest;
+import com.example.maintenance.domain.report.dto.ReportStatusHistoryResponse;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -133,5 +135,25 @@ public class RepairReportController {
 		RepairReportResponse response = repairReportService.exportRepairReport(reportId, request);
 
 		return ResponseEntity.ok(response);
+	}
+
+	@GetMapping("/{reportId}/histories")
+	public ResponseEntity<List<ReportStatusHistoryResponse>> getReportHistories(
+		@PathVariable Long reportId
+	) {
+		List<ReportStatusHistoryResponse> responses =
+			repairReportService.getReportHistories(reportId);
+
+		return ResponseEntity.ok(responses);
+	}
+
+	@GetMapping("/{reportId}/exports")
+	public ResponseEntity<List<ReportExportResponse>> getReportExports(
+		@PathVariable Long reportId
+	) {
+		List<ReportExportResponse> responses =
+			repairReportService.getReportExports(reportId);
+
+		return ResponseEntity.ok(responses);
 	}
 }

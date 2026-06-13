@@ -18,7 +18,9 @@ import com.example.maintenance.domain.report.dto.RepairReportExportRequest;
 import com.example.maintenance.domain.report.dto.RepairReportResponse;
 import com.example.maintenance.domain.report.dto.RepairReportUpdateRequest;
 import com.example.maintenance.domain.report.dto.ReportErrorTypeResponse;
+import com.example.maintenance.domain.report.dto.ReportExportResponse;
 import com.example.maintenance.domain.report.dto.ReportStatusChangeRequest;
+import com.example.maintenance.domain.report.dto.ReportStatusHistoryResponse;
 import com.example.maintenance.domain.technician.Technician;
 import com.example.maintenance.domain.technician.TechnicianRepository;
 import com.example.maintenance.domain.user.User;
@@ -306,5 +308,27 @@ public class RepairReportService {
 			.toList();
 
 		return RepairReportResponse.of(repairReport, errorTypeResponses);
+	}
+
+	// 전체 상태변경이력 오름차순 조회
+	public List<ReportStatusHistoryResponse> getReportHistories(Long reportId) {
+		RepairReport repairReport = repairReportRepository.findByIdAndDeletedFalse(reportId)
+			.orElseThrow(() -> new IllegalArgumentException("리포트를 찾을 수 없습니다."));
+
+		return reportStatusHistoryRepository.findAllByRepairReportIdOrderByChangedAtAsc(repairReport.getId())
+			.stream()
+			.map(ReportStatusHistoryResponse::from)
+			.toList();
+	}
+
+	// 내보내기 이력 내림차순 조회
+	public List<ReportExportResponse> getReportExports(Long reportId) {
+		RepairReport repairReport = repairReportRepository.findByIdAndDeletedFalse(reportId)
+			.orElseThrow(() -> new IllegalArgumentException("리포트를 찾을 수 없습니다."));
+
+		return reportExportRepository.findAllByRepairReportIdOrderByExportedAtDesc(repairReport.getId())
+			.stream()
+			.map(ReportExportResponse::from)
+			.toList();
 	}
 }
