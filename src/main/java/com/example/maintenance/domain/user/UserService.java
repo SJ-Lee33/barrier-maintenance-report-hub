@@ -2,6 +2,7 @@ package com.example.maintenance.domain.user;
 
 import java.util.List;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 public class UserService {
 
 	private final UserRepository userRepository;
+	private final PasswordEncoder passwordEncoder;
 
 	@Transactional
 	public UserResponse createUser(UserCreateRequest request) {
@@ -27,7 +29,7 @@ public class UserService {
 		User user = new User(
 			request.name(),
 			request.email(),
-			request.password(),
+			passwordEncoder.encode(request.password()),
 			request.role()
 		);
 
