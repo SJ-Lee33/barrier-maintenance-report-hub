@@ -113,4 +113,14 @@ public class RepairReportController {
 
 		return ResponseEntity.ok(response);
 	}
+
+	@PatchMapping("/{reportId}/review")
+	public ResponseEntity<RepairReportResponse> reviewingRepairReport(
+		@PathVariable Long reportId,
+		@Valid @RequestBody ReportStatusChangeRequest request
+	) {
+		RepairReportResponse response = repairReportService.reviewingRepairReport(reportId, request);
+
+		return ResponseEntity.ok(response);
+	}
 }

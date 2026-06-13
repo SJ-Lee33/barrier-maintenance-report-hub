@@ -228,6 +228,34 @@ public class RepairReportService {
 		return toResponse(repairReport);
 	}
 
+	@Transactional
+	public RepairReportResponse reviewingRepairReport(
+		Long reportId,
+		ReportStatusChangeRequest request
+	) {
+		RepairReport repairReport = repairReportRepository.findByIdAndDeletedFalse(reportId)
+			.orElseThrow(() -> new IllegalArgumentException("리포트를 찾을 수 없습니다."));
+
+		User changedBy = userRepository.findById(request.changedByUserId())
+			.orElseThrow(() -> new IllegalArgumentException("상태 변경자를 찾을 수 없습니다."));
+
+		ReportStatus fromStatus = repairReport.getStatus();
+
+		repairReport.reviewing();
+
+		ReportStatusHistory history = new ReportStatusHistory(
+			repairReport,
+			fromStatus,
+			repairReport.getStatus(),
+			changedBy,
+			request.reason()
+		);
+
+		reportStatusHistoryRepository.save(history);
+
+		return toResponse(repairReport);
+	}
+
 	private RepairReportResponse toResponse(RepairReport repairReport) {
 		List<ReportErrorType> reportErrorTypes =
 			reportErrorTypeRepository.findAllByRepairReportId(repairReport.getId());
