@@ -10,6 +10,7 @@ import com.example.maintenance.domain.technician.dto.TechnicianResponse;
 import com.example.maintenance.domain.user.User;
 import com.example.maintenance.domain.user.UserRepository;
 import com.example.maintenance.domain.user.UserRole;
+import com.example.maintenance.global.error.NotFoundException;
 
 import lombok.RequiredArgsConstructor;
 
@@ -24,7 +25,7 @@ public class TechnicianService {
 	@Transactional
 	public TechnicianResponse createTechnician(TechnicianCreateRequest request) {
 		User user = userRepository.findById(request.userId())
-			.orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+			.orElseThrow(() -> new NotFoundException("사용자를 찾을 수 없습니다."));
 
 		if (user.getRole() != UserRole.TECHNICIAN) {
 			throw new IllegalArgumentException("계정에 TECHNICIAN 권한이 없습니다.");
@@ -59,7 +60,7 @@ public class TechnicianService {
 
 	public TechnicianResponse getTechnician(Long technicianId) {
 		Technician technician = technicianRepository.findById(technicianId)
-			.orElseThrow(() -> new IllegalArgumentException("기사를 찾을 수 없습니다."));
+			.orElseThrow(() -> new NotFoundException("기사를 찾을 수 없습니다."));
 
 		return TechnicianResponse.from(technician);
 	}

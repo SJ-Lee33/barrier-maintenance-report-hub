@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.maintenance.domain.errortype.dto.ErrorTypeResponse;
+import com.example.maintenance.global.error.NotFoundException;
 
 import lombok.RequiredArgsConstructor;
 
@@ -25,7 +26,7 @@ public class ErrorTypeService {
 
 	public ErrorTypeResponse getErrorType(Long errorTypeId) {
 		ErrorType errorType = errorTypeRepository.findById(errorTypeId)
-			.orElseThrow(() -> new IllegalArgumentException("오류 유형을 찾을 수 없습니다."));
+			.orElseThrow(() -> new NotFoundException("오류 유형을 찾을 수 없습니다."));
 
 		return ErrorTypeResponse.from(errorType);
 	}

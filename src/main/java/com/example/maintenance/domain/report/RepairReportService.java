@@ -25,6 +25,7 @@ import com.example.maintenance.domain.technician.Technician;
 import com.example.maintenance.domain.technician.TechnicianRepository;
 import com.example.maintenance.domain.user.User;
 import com.example.maintenance.domain.user.UserRepository;
+import com.example.maintenance.global.error.NotFoundException;
 
 import lombok.RequiredArgsConstructor;
 
@@ -45,15 +46,15 @@ public class RepairReportService {
 	@Transactional
 	public RepairReportResponse createRepairReport(RepairReportCreateRequest request) {
 		Technician technician = technicianRepository.findById(request.technicianId())
-			.orElseThrow(() -> new IllegalArgumentException("기사를 찾을 수 없습니다."));
+			.orElseThrow(() -> new NotFoundException("기사를 찾을 수 없습니다."));
 
 		Device device = deviceRepository.findById(request.deviceId())
-			.orElseThrow(() -> new IllegalArgumentException("장비를 찾을 수 없습니다."));
+			.orElseThrow(() -> new NotFoundException("장비를 찾을 수 없습니다."));
 
 		List<ErrorType> errorTypes = errorTypeRepository.findAllById(request.errorTypeIds());
 
 		if (errorTypes.size() != request.errorTypeIds().size()) {
-			throw new IllegalArgumentException("존재하지 않는 오류 유형이 포함되어 있습니다.");
+			throw new NotFoundException("존재하지 않는 오류 유형이 포함되어 있습니다.");
 		}
 
 		RepairReport repairReport = new RepairReport(
@@ -90,7 +91,7 @@ public class RepairReportService {
 
 	public RepairReportResponse getRepairReport(Long reportId) {
 		RepairReport repairReport = repairReportRepository.findByIdAndDeletedFalse(reportId)
-			.orElseThrow(() -> new IllegalArgumentException("리포트를 찾을 수 없습니다."));
+			.orElseThrow(() -> new NotFoundException("리포트를 찾을 수 없습니다."));
 
 		return toResponse(repairReport);
 	}
@@ -101,7 +102,7 @@ public class RepairReportService {
 		RepairReportUpdateRequest request
 	) {
 		RepairReport repairReport = repairReportRepository.findByIdAndDeletedFalse(reportId)
-			.orElseThrow(() -> new IllegalArgumentException("리포트를 찾을 수 없습니다."));
+			.orElseThrow(() -> new NotFoundException("리포트를 찾을 수 없습니다."));
 
 		repairReport.update(
 			request.title(),
@@ -117,7 +118,7 @@ public class RepairReportService {
 	@Transactional
 	public void deleteRepairReport(Long reportId) {
 		RepairReport repairReport = repairReportRepository.findByIdAndDeletedFalse(reportId)
-			.orElseThrow(() -> new IllegalArgumentException("리포트를 찾을 수 없습니다."));
+			.orElseThrow(() -> new NotFoundException("리포트를 찾을 수 없습니다."));
 
 		repairReport.delete();
 	}
@@ -128,10 +129,10 @@ public class RepairReportService {
 		ReportStatusChangeRequest request
 	) {
 		RepairReport repairReport = repairReportRepository.findByIdAndDeletedFalse(reportId)
-			.orElseThrow(() -> new IllegalArgumentException("리포트를 찾을 수 없습니다."));
+			.orElseThrow(() -> new NotFoundException("리포트를 찾을 수 없습니다."));
 
 		User changedBy = userRepository.findById(request.changedByUserId())
-			.orElseThrow(() -> new IllegalArgumentException("상태 변경자를 찾을 수 없습니다."));
+			.orElseThrow(() -> new NotFoundException("상태 변경자를 찾을 수 없습니다."));
 
 		ReportStatus fromStatus = repairReport.getStatus();
 
@@ -156,10 +157,10 @@ public class RepairReportService {
 		ReportStatusChangeRequest request
 	) {
 		RepairReport repairReport = repairReportRepository.findByIdAndDeletedFalse(reportId)
-			.orElseThrow(() -> new IllegalArgumentException("리포트를 찾을 수 없습니다."));
+			.orElseThrow(() -> new NotFoundException("리포트를 찾을 수 없습니다."));
 
 		User changedBy = userRepository.findById(request.changedByUserId())
-			.orElseThrow(() -> new IllegalArgumentException("상태 변경자를 찾을 수 없습니다."));
+			.orElseThrow(() -> new NotFoundException("상태 변경자를 찾을 수 없습니다."));
 
 		ReportStatus fromStatus = repairReport.getStatus();
 
@@ -184,10 +185,10 @@ public class RepairReportService {
 		ReportStatusChangeRequest request
 	) {
 		RepairReport repairReport = repairReportRepository.findByIdAndDeletedFalse(reportId)
-			.orElseThrow(() -> new IllegalArgumentException("리포트를 찾을 수 없습니다."));
+			.orElseThrow(() -> new NotFoundException("리포트를 찾을 수 없습니다."));
 
 		User changedBy = userRepository.findById(request.changedByUserId())
-			.orElseThrow(() -> new IllegalArgumentException("상태 변경자를 찾을 수 없습니다."));
+			.orElseThrow(() -> new NotFoundException("상태 변경자를 찾을 수 없습니다."));
 
 		ReportStatus fromStatus = repairReport.getStatus();
 
@@ -212,10 +213,10 @@ public class RepairReportService {
 		ReportStatusChangeRequest request
 	) {
 		RepairReport repairReport = repairReportRepository.findByIdAndDeletedFalse(reportId)
-			.orElseThrow(() -> new IllegalArgumentException("리포트를 찾을 수 없습니다."));
+			.orElseThrow(() -> new NotFoundException("리포트를 찾을 수 없습니다."));
 
 		User changedBy = userRepository.findById(request.changedByUserId())
-			.orElseThrow(() -> new IllegalArgumentException("상태 변경자를 찾을 수 없습니다."));
+			.orElseThrow(() -> new NotFoundException("상태 변경자를 찾을 수 없습니다."));
 
 		ReportStatus fromStatus = repairReport.getStatus();
 
@@ -240,10 +241,10 @@ public class RepairReportService {
 		ReportStatusChangeRequest request
 	) {
 		RepairReport repairReport = repairReportRepository.findByIdAndDeletedFalse(reportId)
-			.orElseThrow(() -> new IllegalArgumentException("리포트를 찾을 수 없습니다."));
+			.orElseThrow(() -> new NotFoundException("리포트를 찾을 수 없습니다."));
 
 		User changedBy = userRepository.findById(request.changedByUserId())
-			.orElseThrow(() -> new IllegalArgumentException("상태 변경자를 찾을 수 없습니다."));
+			.orElseThrow(() -> new NotFoundException("상태 변경자를 찾을 수 없습니다."));
 
 		ReportStatus fromStatus = repairReport.getStatus();
 
@@ -268,10 +269,10 @@ public class RepairReportService {
 		RepairReportExportRequest request
 	) {
 		RepairReport repairReport = repairReportRepository.findByIdAndDeletedFalse(reportId)
-			.orElseThrow(() -> new IllegalArgumentException("리포트를 찾을 수 없습니다."));
+			.orElseThrow(() -> new NotFoundException("리포트를 찾을 수 없습니다."));
 
 		User changedBy = userRepository.findById(request.changedByUserId())
-			.orElseThrow(() -> new IllegalArgumentException("Export 실행자를 찾을 수 없습니다."));
+			.orElseThrow(() -> new NotFoundException("Export 실행자를 찾을 수 없습니다."));
 
 		ReportStatus fromStatus = repairReport.getStatus();
 
@@ -313,7 +314,7 @@ public class RepairReportService {
 	// 전체 상태변경이력 오름차순 조회
 	public List<ReportStatusHistoryResponse> getReportHistories(Long reportId) {
 		RepairReport repairReport = repairReportRepository.findByIdAndDeletedFalse(reportId)
-			.orElseThrow(() -> new IllegalArgumentException("리포트를 찾을 수 없습니다."));
+			.orElseThrow(() -> new NotFoundException("리포트를 찾을 수 없습니다."));
 
 		return reportStatusHistoryRepository.findAllByRepairReportIdOrderByChangedAtAsc(repairReport.getId())
 			.stream()
@@ -324,7 +325,7 @@ public class RepairReportService {
 	// 내보내기 이력 내림차순 조회
 	public List<ReportExportResponse> getReportExports(Long reportId) {
 		RepairReport repairReport = repairReportRepository.findByIdAndDeletedFalse(reportId)
-			.orElseThrow(() -> new IllegalArgumentException("리포트를 찾을 수 없습니다."));
+			.orElseThrow(() -> new NotFoundException("리포트를 찾을 수 없습니다."));
 
 		return reportExportRepository.findAllByRepairReportIdOrderByExportedAtDesc(repairReport.getId())
 			.stream()

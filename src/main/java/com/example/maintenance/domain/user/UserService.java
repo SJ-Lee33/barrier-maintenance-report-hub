@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.maintenance.domain.user.dto.UserCreateRequest;
 import com.example.maintenance.domain.user.dto.UserResponse;
+import com.example.maintenance.global.error.NotFoundException;
 
 import lombok.RequiredArgsConstructor;
 
@@ -44,7 +45,7 @@ public class UserService {
 
 	public UserResponse getUser(Long userId) {
 		User user = userRepository.findById(userId)
-			.orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+			.orElseThrow(() -> new NotFoundException("사용자를 찾을 수 없습니다."));
 
 		return UserResponse.from(user);
 	}
