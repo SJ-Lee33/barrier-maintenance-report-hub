@@ -176,4 +176,15 @@ public class RepairReport extends BaseTimeEntity {
 		this.submittedAt = LocalDateTime.now();
 		this.submittedBy = submittedBy;
 	}
+
+	// 승인
+	public void approve(User approvedBy) {
+		if (this.status != ReportStatus.SUBMITTED && this.status != ReportStatus.REVIEWING) {
+			throw new IllegalStateException("승인할 수 없는 상태입니다.");
+		}
+
+		this.status = ReportStatus.APPROVED;
+		this.approvedAt = LocalDateTime.now();
+		this.approvedBy = approvedBy;
+	}
 }
