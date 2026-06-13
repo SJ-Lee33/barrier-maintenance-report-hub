@@ -4,6 +4,8 @@ import com.example.maintenance.domain.user.User;
 import com.example.maintenance.domain.user.UserRole;
 
 public record LoginResponse(
+	String accessToken,
+	String tokenType,
 	Long userId,
 	String name,
 	String email,
@@ -11,8 +13,10 @@ public record LoginResponse(
 	UserRole role
 ) {
 
-	public static LoginResponse from(User user) {
+	public static LoginResponse of(String accessToken, User user) {
 		return new LoginResponse(
+			accessToken,
+			"Bearer",
 			user.getId(),
 			user.getName(),
 			user.getEmail(),

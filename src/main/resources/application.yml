@@ -26,3 +26,7 @@ springdoc:
     path: /swagger-ui.html
     operations-sorter: method
     tags-sorter: alpha
+
+jwt:
+  secret: ${JWT_SECRET_KEY}
+  access-token-validity-in-milliseconds: ${JWT_ACCESS_TOKEN_VALIDITY:3600000}

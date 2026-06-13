@@ -11,6 +11,7 @@ import com.example.maintenance.domain.user.User;
 import com.example.maintenance.domain.user.UserRepository;
 import com.example.maintenance.domain.user.dto.UserResponse;
 import com.example.maintenance.global.error.NotFoundException;
+import com.example.maintenance.global.security.jwt.JwtTokenProvider;
 
 import lombok.RequiredArgsConstructor;
 
@@ -21,6 +22,7 @@ public class AuthService {
 
 	private final UserRepository userRepository;
 	private final PasswordEncoder passwordEncoder;
+	private final JwtTokenProvider jwtTokenProvider;
 
 	@Transactional
 	public UserResponse signup(SignupRequest request) {
@@ -53,6 +55,8 @@ public class AuthService {
 			throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
 		}
 
-		return LoginResponse.from(user);
+		String accessToken = jwtTokenProvider.createAccessToken(user);
+
+		return LoginResponse.of(accessToken, user);
 	}
 }
