@@ -93,4 +93,14 @@ public class RepairReportController {
 
 		return ResponseEntity.ok(response);
 	}
+
+	@PatchMapping("/{reportId}/reject")
+	public ResponseEntity<RepairReportResponse> rejectRepairReport(
+		@PathVariable Long reportId,
+		@Valid @RequestBody ReportStatusChangeRequest request
+	) {
+		RepairReportResponse response = repairReportService.rejectRepairReport(reportId, request);
+
+		return ResponseEntity.ok(response);
+	}
 }
