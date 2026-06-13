@@ -18,7 +18,19 @@ public record RepairReportResponse(
 	String repairAction,
 	ReportStatus status,
 	LocalDateTime occurredAt,
-	LocalDateTime repairedAt
+	LocalDateTime repairedAt,
+
+	LocalDateTime submittedAt,
+	Long submittedByUserId,
+	String submittedByUserName,
+
+	LocalDateTime approvedAt,
+	Long approvedByUserId,
+	String approvedByUserName,
+
+	LocalDateTime exportedAt,
+	Long exportedByUserId,
+	String exportedByUserName
 ) {
 
 	public static RepairReportResponse of(
@@ -37,7 +49,19 @@ public record RepairReportResponse(
 			repairReport.getRepairAction(),
 			repairReport.getStatus(),
 			repairReport.getOccurredAt(),
-			repairReport.getRepairedAt()
+			repairReport.getRepairedAt(),
+
+			repairReport.getSubmittedAt(),
+			repairReport.getSubmittedBy() == null ? null : repairReport.getSubmittedBy().getId(),
+			repairReport.getSubmittedBy() == null ? null : repairReport.getSubmittedBy().getName(),
+
+			repairReport.getApprovedAt(),
+			repairReport.getApprovedBy() == null ? null : repairReport.getApprovedBy().getId(),
+			repairReport.getApprovedBy() == null ? null : repairReport.getApprovedBy().getName(),
+
+			repairReport.getExportedAt(),
+			repairReport.getExportedBy() == null ? null : repairReport.getExportedBy().getId(),
+			repairReport.getExportedBy() == null ? null : repairReport.getExportedBy().getName()
 		);
 	}
 }

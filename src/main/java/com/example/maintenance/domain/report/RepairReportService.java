@@ -129,7 +129,7 @@ public class RepairReportService {
 
 		ReportStatus fromStatus = repairReport.getStatus();
 
-		repairReport.submit();
+		repairReport.submit(changedBy);
 
 		ReportStatusHistory history = new ReportStatusHistory(
 			repairReport,

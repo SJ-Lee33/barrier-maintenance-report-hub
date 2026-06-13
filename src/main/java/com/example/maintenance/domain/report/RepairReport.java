@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 import com.example.maintenance.domain.device.Device;
 import com.example.maintenance.domain.technician.Technician;
+import com.example.maintenance.domain.user.User;
 import com.example.maintenance.global.common.BaseTimeEntity;
 
 import jakarta.persistence.Column;
@@ -69,6 +70,30 @@ public class RepairReport extends BaseTimeEntity {
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false, length = 30)
 	private ReportStatus status;
+
+	/**
+	 * 결재 라인 추적
+	 */
+	@Column(name = "submitted_at")
+	private LocalDateTime submittedAt;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "submitted_by")
+	private User submittedBy;
+
+	@Column(name = "approved_at")
+	private LocalDateTime approvedAt;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "approved_by")
+	private User approvedBy;
+
+	@Column(name = "exported_at")
+	private LocalDateTime exportedAt;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "exported_by")
+	private User exportedBy;
 
 	/**
 	 * 리포트 삭제 (soft delete) - false인 것만 조회됨
@@ -142,11 +167,13 @@ public class RepairReport extends BaseTimeEntity {
 	}
 
 	// 제출
-	public void submit() {
+	public void submit(User submittedBy) {
 		if (this.status != ReportStatus.DRAFT && this.status != ReportStatus.RESUBMITTED) {
-			throw new IllegalStateException("제출할 수 없습니다.");
+			throw new IllegalStateException("제출할 수 없는 상태입니다.");
 		}
 
 		this.status = ReportStatus.SUBMITTED;
+		this.submittedAt = LocalDateTime.now();
+		this.submittedBy = submittedBy;
 	}
 }
