@@ -1,0 +1,159 @@
+package com.example.maintenance.domain.report;
+
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.example.maintenance.domain.report.dto.RepairReportCreateRequest;
+import com.example.maintenance.domain.report.dto.RepairReportExportRequest;
+import com.example.maintenance.domain.report.dto.RepairReportResponse;
+import com.example.maintenance.domain.report.dto.RepairReportUpdateRequest;
+import com.example.maintenance.domain.report.dto.ReportExportResponse;
+import com.example.maintenance.domain.report.dto.ReportStatusChangeRequest;
+import com.example.maintenance.domain.report.dto.ReportStatusHistoryResponse;
+
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/api/repair-reports")
+public class RepairReportController {
+
+	private final RepairReportService repairReportService;
+
+	@PostMapping
+	public ResponseEntity<RepairReportResponse> createRepairReport(
+		@Valid @RequestBody RepairReportCreateRequest request
+	) {
+		RepairReportResponse response = repairReportService.createRepairReport(request);
+
+		return ResponseEntity
+			.status(HttpStatus.CREATED)
+			.body(response);
+	}
+
+	@GetMapping
+	public ResponseEntity<List<RepairReportResponse>> getRepairReports() {
+		List<RepairReportResponse> responses = repairReportService.getRepairReports();
+
+		return ResponseEntity.ok(responses);
+	}
+
+	@GetMapping("/{reportId}")
+	public ResponseEntity<RepairReportResponse> getRepairReport(
+		@PathVariable Long reportId
+	) {
+		RepairReportResponse response = repairReportService.getRepairReport(reportId);
+
+		return ResponseEntity.ok(response);
+	}
+
+	@PatchMapping("/{reportId}")
+	public ResponseEntity<RepairReportResponse> updateRepairReport(
+		@PathVariable Long reportId,
+		@Valid @RequestBody RepairReportUpdateRequest request
+	) {
+		RepairReportResponse response = repairReportService.updateRepairReport(reportId, request);
+
+		return ResponseEntity.ok(response);
+	}
+
+	@DeleteMapping("/{reportId}")
+	public ResponseEntity<Void> deleteRepairReport(
+		@PathVariable Long reportId
+	) {
+		repairReportService.deleteRepairReport(reportId);
+
+		return ResponseEntity.noContent().build();
+	}
+
+	@PatchMapping("/{reportId}/submit")
+	public ResponseEntity<RepairReportResponse> submitRepairReport(
+		@PathVariable Long reportId,
+		@Valid @RequestBody ReportStatusChangeRequest request
+	) {
+		RepairReportResponse response = repairReportService.submitRepairReport(reportId, request);
+
+		return ResponseEntity.ok(response);
+	}
+
+	@PatchMapping("/{reportId}/approve")
+	public ResponseEntity<RepairReportResponse> approveRepairReport(
+		@PathVariable Long reportId,
+		@Valid @RequestBody ReportStatusChangeRequest request
+	) {
+		RepairReportResponse response = repairReportService.approveRepairReport(reportId, request);
+
+		return ResponseEntity.ok(response);
+	}
+
+	@PatchMapping("/{reportId}/reject")
+	public ResponseEntity<RepairReportResponse> rejectRepairReport(
+		@PathVariable Long reportId,
+		@Valid @RequestBody ReportStatusChangeRequest request
+	) {
+		RepairReportResponse response = repairReportService.rejectRepairReport(reportId, request);
+
+		return ResponseEntity.ok(response);
+	}
+
+	@PatchMapping("/{reportId}/resubmit")
+	public ResponseEntity<RepairReportResponse> resubmitRepairReport(
+		@PathVariable Long reportId,
+		@Valid @RequestBody ReportStatusChangeRequest request
+	) {
+		RepairReportResponse response = repairReportService.resubmitRepairReport(reportId, request);
+
+		return ResponseEntity.ok(response);
+	}
+
+	@PatchMapping("/{reportId}/review")
+	public ResponseEntity<RepairReportResponse> reviewingRepairReport(
+		@PathVariable Long reportId,
+		@Valid @RequestBody ReportStatusChangeRequest request
+	) {
+		RepairReportResponse response = repairReportService.reviewingRepairReport(reportId, request);
+
+		return ResponseEntity.ok(response);
+	}
+
+	@PostMapping("/{reportId}/export")
+	public ResponseEntity<RepairReportResponse> exportRepairReport(
+		@PathVariable Long reportId,
+		@Valid @RequestBody RepairReportExportRequest request
+	) {
+		RepairReportResponse response = repairReportService.exportRepairReport(reportId, request);
+
+		return ResponseEntity.ok(response);
+	}
+
+	@GetMapping("/{reportId}/histories")
+	public ResponseEntity<List<ReportStatusHistoryResponse>> getReportHistories(
+		@PathVariable Long reportId
+	) {
+		List<ReportStatusHistoryResponse> responses =
+			repairReportService.getReportHistories(reportId);
+
+		return ResponseEntity.ok(responses);
+	}
+
+	@GetMapping("/{reportId}/exports")
+	public ResponseEntity<List<ReportExportResponse>> getReportExports(
+		@PathVariable Long reportId
+	) {
+		List<ReportExportResponse> responses =
+			repairReportService.getReportExports(reportId);
+
+		return ResponseEntity.ok(responses);
+	}
+}
