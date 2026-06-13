@@ -11,6 +11,7 @@ import com.example.maintenance.domain.errortype.ErrorType;
 import com.example.maintenance.domain.errortype.ErrorTypeRepository;
 import com.example.maintenance.domain.report.dto.RepairReportCreateRequest;
 import com.example.maintenance.domain.report.dto.RepairReportResponse;
+import com.example.maintenance.domain.report.dto.RepairReportUpdateRequest;
 import com.example.maintenance.domain.report.dto.ReportErrorTypeResponse;
 import com.example.maintenance.domain.technician.Technician;
 import com.example.maintenance.domain.technician.TechnicianRepository;
@@ -68,17 +69,44 @@ public class RepairReportService {
 	}
 
 	public List<RepairReportResponse> getRepairReports() {
-		return repairReportRepository.findAll()
+		return repairReportRepository.findAllByDeletedFalse()
 			.stream()
 			.map(this::toResponse)
 			.toList();
 	}
 
 	public RepairReportResponse getRepairReport(Long reportId) {
-		RepairReport repairReport = repairReportRepository.findById(reportId)
+		RepairReport repairReport = repairReportRepository.findByIdAndDeletedFalse(reportId)
 			.orElseThrow(() -> new IllegalArgumentException("리포트를 찾을 수 없습니다."));
 
 		return toResponse(repairReport);
+	}
+
+	@Transactional
+	public RepairReportResponse updateRepairReport(
+		Long reportId,
+		RepairReportUpdateRequest request
+	) {
+		RepairReport repairReport = repairReportRepository.findByIdAndDeletedFalse(reportId)
+			.orElseThrow(() -> new IllegalArgumentException("리포트를 찾을 수 없습니다."));
+
+		repairReport.update(
+			request.title(),
+			request.description(),
+			request.repairAction(),
+			request.occurredAt(),
+			request.repairedAt()
+		);
+
+		return toResponse(repairReport);
+	}
+
+	@Transactional
+	public void deleteRepairReport(Long reportId) {
+		RepairReport repairReport = repairReportRepository.findByIdAndDeletedFalse(reportId)
+			.orElseThrow(() -> new IllegalArgumentException("리포트를 찾을 수 없습니다."));
+
+		repairReport.delete();
 	}
 
 	private RepairReportResponse toResponse(RepairReport repairReport) {

@@ -71,6 +71,12 @@ public class RepairReport extends BaseTimeEntity {
 	private ReportStatus status;
 
 	/**
+	 * 리포트 삭제 (soft delete) - false인 것만 조회됨
+	 */
+	@Column(nullable = false)
+	private boolean deleted = false;
+
+	/**
 	 * 오류 발생 시각
 	 */
 	@Column(name = "occurred_at", nullable = false)
@@ -99,5 +105,39 @@ public class RepairReport extends BaseTimeEntity {
 		this.status = ReportStatus.DRAFT; // 초기값 설정
 		this.occurredAt = occurredAt;
 		this.repairedAt = repairedAt;
+	}
+
+	// 수정 매서드
+	public void update(
+		String title,
+		String description,
+		String repairAction,
+		LocalDateTime occurredAt,
+		LocalDateTime repairedAt
+	) {
+		if (title != null) {
+			this.title = title;
+		}
+
+		if (description != null) {
+			this.description = description;
+		}
+
+		if (repairAction != null) {
+			this.repairAction = repairAction;
+		}
+
+		if (occurredAt != null) {
+			this.occurredAt = occurredAt;
+		}
+
+		if (repairedAt != null) {
+			this.repairedAt = repairedAt;
+		}
+	}
+
+	// 삭제 매서드
+	public void delete() {
+		this.deleted = true;
 	}
 }
