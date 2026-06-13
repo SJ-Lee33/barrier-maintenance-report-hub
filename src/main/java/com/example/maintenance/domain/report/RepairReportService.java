@@ -9,12 +9,17 @@ import com.example.maintenance.domain.device.Device;
 import com.example.maintenance.domain.device.DeviceRepository;
 import com.example.maintenance.domain.errortype.ErrorType;
 import com.example.maintenance.domain.errortype.ErrorTypeRepository;
+import com.example.maintenance.domain.history.ReportStatusHistory;
+import com.example.maintenance.domain.history.ReportStatusHistoryRepository;
 import com.example.maintenance.domain.report.dto.RepairReportCreateRequest;
 import com.example.maintenance.domain.report.dto.RepairReportResponse;
 import com.example.maintenance.domain.report.dto.RepairReportUpdateRequest;
 import com.example.maintenance.domain.report.dto.ReportErrorTypeResponse;
+import com.example.maintenance.domain.report.dto.ReportStatusChangeRequest;
 import com.example.maintenance.domain.technician.Technician;
 import com.example.maintenance.domain.technician.TechnicianRepository;
+import com.example.maintenance.domain.user.User;
+import com.example.maintenance.domain.user.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -28,6 +33,8 @@ public class RepairReportService {
 	private final TechnicianRepository technicianRepository;
 	private final DeviceRepository deviceRepository;
 	private final ErrorTypeRepository errorTypeRepository;
+	private final ReportStatusHistoryRepository reportStatusHistoryRepository;
+	private final UserRepository userRepository;
 
 	@Transactional
 	public RepairReportResponse createRepairReport(RepairReportCreateRequest request) {
@@ -107,6 +114,34 @@ public class RepairReportService {
 			.orElseThrow(() -> new IllegalArgumentException("리포트를 찾을 수 없습니다."));
 
 		repairReport.delete();
+	}
+
+	@Transactional
+	public RepairReportResponse submitRepairReport(
+		Long reportId,
+		ReportStatusChangeRequest request
+	) {
+		RepairReport repairReport = repairReportRepository.findByIdAndDeletedFalse(reportId)
+			.orElseThrow(() -> new IllegalArgumentException("리포트를 찾을 수 없습니다."));
+
+		User changedBy = userRepository.findById(request.changedByUserId())
+			.orElseThrow(() -> new IllegalArgumentException("상태 변경자를 찾을 수 없습니다."));
+
+		ReportStatus fromStatus = repairReport.getStatus();
+
+		repairReport.submit();
+
+		ReportStatusHistory history = new ReportStatusHistory(
+			repairReport,
+			fromStatus,
+			repairReport.getStatus(),
+			changedBy,
+			request.reason()
+		);
+
+		reportStatusHistoryRepository.save(history);
+
+		return toResponse(repairReport);
 	}
 
 	private RepairReportResponse toResponse(RepairReport repairReport) {

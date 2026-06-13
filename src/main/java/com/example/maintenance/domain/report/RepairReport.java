@@ -140,4 +140,13 @@ public class RepairReport extends BaseTimeEntity {
 	public void delete() {
 		this.deleted = true;
 	}
+
+	// 제출
+	public void submit() {
+		if (this.status != ReportStatus.DRAFT && this.status != ReportStatus.RESUBMITTED) {
+			throw new IllegalStateException("제출할 수 없습니다.");
+		}
+
+		this.status = ReportStatus.SUBMITTED;
+	}
 }

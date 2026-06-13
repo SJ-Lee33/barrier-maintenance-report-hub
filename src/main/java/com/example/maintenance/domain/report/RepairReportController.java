@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.maintenance.domain.report.dto.RepairReportCreateRequest;
 import com.example.maintenance.domain.report.dto.RepairReportResponse;
 import com.example.maintenance.domain.report.dto.RepairReportUpdateRequest;
+import com.example.maintenance.domain.report.dto.ReportStatusChangeRequest;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -71,5 +72,15 @@ public class RepairReportController {
 		repairReportService.deleteRepairReport(reportId);
 
 		return ResponseEntity.noContent().build();
+	}
+
+	@PatchMapping("/{reportId}/submit")
+	public ResponseEntity<RepairReportResponse> submitRepairReport(
+		@PathVariable Long reportId,
+		@Valid @RequestBody ReportStatusChangeRequest request
+	) {
+		RepairReportResponse response = repairReportService.submitRepairReport(reportId, request);
+
+		return ResponseEntity.ok(response);
 	}
 }
