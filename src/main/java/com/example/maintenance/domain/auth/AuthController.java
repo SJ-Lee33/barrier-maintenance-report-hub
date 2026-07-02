@@ -17,6 +17,7 @@ import com.example.maintenance.domain.user.dto.UserResponse;
 import com.example.maintenance.global.security.CustomUserDetails;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -51,6 +52,7 @@ public class AuthController {
 		return ResponseEntity.ok(response);
 	}
 
+	@SecurityRequirement(name = "bearerAuth")
 	@Operation(summary = "내 정보 조회", description = "JWT 인증된 현재 로그인 사용자의 정보를 조회합니다.")
 	@GetMapping("/me")
 	public ResponseEntity<MeResponse> getMyInfo(
