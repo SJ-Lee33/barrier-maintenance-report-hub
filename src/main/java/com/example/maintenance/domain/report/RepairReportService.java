@@ -236,7 +236,7 @@ public class RepairReportService {
 
 		ReportStatus fromStatus = repairReport.getStatus();
 
-		repairReport.reviewing();
+		repairReport.startReview();
 
 		reportStatusHistoryRepository.save(
 			new ReportStatusHistory(

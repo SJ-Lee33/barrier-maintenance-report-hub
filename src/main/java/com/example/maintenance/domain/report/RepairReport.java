@@ -209,7 +209,7 @@ public class RepairReport extends BaseTimeEntity {
 	}
 
 	// 검토
-	public void reviewing() {
+	public void startReview() {
 		if (this.status != ReportStatus.SUBMITTED) {
 			throw new IllegalStateException("검토를 시작할 수 없는 상태입니다.");
 		}
