@@ -8,9 +8,6 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public record RepairReportExportRequest(
-	@Schema(description = "Export 실행자 User ID", example = "2")
-	@NotNull(message = "Export 실행자 ID는 필수입니다.")
-	Long changedByUserId,
 
 	@Schema(description = "Export 형식", example = "EXCEL")
 	@NotNull(message = "Export 형식은 필수입니다.")

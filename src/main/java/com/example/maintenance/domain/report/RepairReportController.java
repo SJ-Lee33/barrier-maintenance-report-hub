@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -21,6 +22,7 @@ import com.example.maintenance.domain.report.dto.ReportExportResponse;
 import com.example.maintenance.domain.report.dto.ReportStatusChangeRequest;
 import com.example.maintenance.domain.report.dto.ReportStatusHistoryResponse;
 import com.example.maintenance.global.error.ErrorResponse;
+import com.example.maintenance.global.security.CustomUserDetails;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -137,9 +139,14 @@ public class RepairReportController {
 	@PatchMapping("/{reportId}/submit")
 	public ResponseEntity<RepairReportResponse> submitRepairReport(
 		@PathVariable Long reportId,
-		@Valid @RequestBody ReportStatusChangeRequest request
+		@Valid @RequestBody ReportStatusChangeRequest request,
+		@AuthenticationPrincipal CustomUserDetails userDetails
 	) {
-		RepairReportResponse response = repairReportService.submitRepairReport(reportId, request);
+		RepairReportResponse response = repairReportService.submitRepairReport(
+			reportId,
+			request,
+			userDetails.getUser()
+		);
 
 		return ResponseEntity.ok(response);
 	}
@@ -164,9 +171,14 @@ public class RepairReportController {
 	@PatchMapping("/{reportId}/approve")
 	public ResponseEntity<RepairReportResponse> approveRepairReport(
 		@PathVariable Long reportId,
-		@Valid @RequestBody ReportStatusChangeRequest request
+		@Valid @RequestBody ReportStatusChangeRequest request,
+		@AuthenticationPrincipal CustomUserDetails userDetails
 	) {
-		RepairReportResponse response = repairReportService.approveRepairReport(reportId, request);
+		RepairReportResponse response = repairReportService.approveRepairReport(
+			reportId,
+			request,
+			userDetails.getUser()
+		);
 
 		return ResponseEntity.ok(response);
 	}
@@ -178,9 +190,14 @@ public class RepairReportController {
 	@PatchMapping("/{reportId}/reject")
 	public ResponseEntity<RepairReportResponse> rejectRepairReport(
 		@PathVariable Long reportId,
-		@Valid @RequestBody ReportStatusChangeRequest request
+		@Valid @RequestBody ReportStatusChangeRequest request,
+		@AuthenticationPrincipal CustomUserDetails userDetails
 	) {
-		RepairReportResponse response = repairReportService.rejectRepairReport(reportId, request);
+		RepairReportResponse response = repairReportService.rejectRepairReport(
+			reportId,
+			request,
+			userDetails.getUser()
+		);
 
 		return ResponseEntity.ok(response);
 	}
@@ -189,9 +206,14 @@ public class RepairReportController {
 	@PatchMapping("/{reportId}/resubmit")
 	public ResponseEntity<RepairReportResponse> resubmitRepairReport(
 		@PathVariable Long reportId,
-		@Valid @RequestBody ReportStatusChangeRequest request
+		@Valid @RequestBody ReportStatusChangeRequest request,
+		@AuthenticationPrincipal CustomUserDetails userDetails
 	) {
-		RepairReportResponse response = repairReportService.resubmitRepairReport(reportId, request);
+		RepairReportResponse response = repairReportService.resubmitRepairReport(
+			reportId,
+			request,
+			userDetails.getUser()
+		);
 
 		return ResponseEntity.ok(response);
 	}
@@ -200,9 +222,14 @@ public class RepairReportController {
 	@PatchMapping("/{reportId}/review")
 	public ResponseEntity<RepairReportResponse> reviewingRepairReport(
 		@PathVariable Long reportId,
-		@Valid @RequestBody ReportStatusChangeRequest request
+		@Valid @RequestBody ReportStatusChangeRequest request,
+		@AuthenticationPrincipal CustomUserDetails userDetails
 	) {
-		RepairReportResponse response = repairReportService.reviewingRepairReport(reportId, request);
+		RepairReportResponse response = repairReportService.reviewingRepairReport(
+			reportId,
+			request,
+			userDetails.getUser()
+		);
 
 		return ResponseEntity.ok(response);
 	}
@@ -227,9 +254,14 @@ public class RepairReportController {
 	@PostMapping("/{reportId}/export")
 	public ResponseEntity<RepairReportResponse> exportRepairReport(
 		@PathVariable Long reportId,
-		@Valid @RequestBody RepairReportExportRequest request
+		@Valid @RequestBody RepairReportExportRequest request,
+		@AuthenticationPrincipal CustomUserDetails userDetails
 	) {
-		RepairReportResponse response = repairReportService.exportRepairReport(reportId, request);
+		RepairReportResponse response = repairReportService.exportRepairReport(
+			reportId,
+			request,
+			userDetails.getUser()
+		);
 
 		return ResponseEntity.ok(response);
 	}
