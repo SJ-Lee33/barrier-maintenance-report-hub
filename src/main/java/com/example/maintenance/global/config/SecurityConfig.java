@@ -70,7 +70,7 @@ public class SecurityConfig {
 
 				// RepairReport 수정/삭제
 				.requestMatchers(HttpMethod.PATCH, "/api/repair-reports/*").hasRole("TECHNICIAN")
-				.requestMatchers(HttpMethod.DELETE, "/api/repair-reports/*").hasAnyRole("TECHNICIAN", "ADMIN")
+				.requestMatchers(HttpMethod.DELETE, "/api/repair-reports/*").hasRole("TECHNICIAN")
 
 				// RepairReport 조회
 				.requestMatchers(HttpMethod.GET, "/api/repair-reports/**").authenticated()

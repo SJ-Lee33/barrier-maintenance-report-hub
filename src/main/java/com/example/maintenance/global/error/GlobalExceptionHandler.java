@@ -29,6 +29,23 @@ public class GlobalExceptionHandler {
 			.status(HttpStatus.NOT_FOUND)
 			.body(response);
 	}
+	
+	@ExceptionHandler(ForbiddenException.class)
+	public ResponseEntity<ErrorResponse> handleForbiddenException(
+		ForbiddenException exception,
+		HttpServletRequest request
+	) {
+		ErrorResponse response = ErrorResponse.of(
+			HttpStatus.FORBIDDEN.value(),
+			HttpStatus.FORBIDDEN.getReasonPhrase(),
+			exception.getMessage(),
+			request.getRequestURI()
+		);
+
+		return ResponseEntity
+			.status(HttpStatus.FORBIDDEN)
+			.body(response);
+	}
 
 	@ExceptionHandler(IllegalArgumentException.class)
 	public ResponseEntity<ErrorResponse> handleIllegalArgumentException(
@@ -121,4 +138,5 @@ public class GlobalExceptionHandler {
 			.status(HttpStatus.INTERNAL_SERVER_ERROR)
 			.body(response);
 	}
+
 }

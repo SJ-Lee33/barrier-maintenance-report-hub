@@ -102,9 +102,14 @@ public class RepairReportController {
 	@PatchMapping("/{reportId}")
 	public ResponseEntity<RepairReportResponse> updateRepairReport(
 		@PathVariable Long reportId,
-		@Valid @RequestBody RepairReportUpdateRequest request
+		@Valid @RequestBody RepairReportUpdateRequest request,
+		@AuthenticationPrincipal CustomUserDetails userDetails
 	) {
-		RepairReportResponse response = repairReportService.updateRepairReport(reportId, request);
+		RepairReportResponse response = repairReportService.updateRepairReport(
+			reportId,
+			request,
+			userDetails.getUser()
+		);
 
 		return ResponseEntity.ok(response);
 	}
@@ -112,9 +117,13 @@ public class RepairReportController {
 	@Operation(summary = "리포트 삭제", description = "리포트를 soft delete 처리합니다.")
 	@DeleteMapping("/{reportId}")
 	public ResponseEntity<Void> deleteRepairReport(
-		@PathVariable Long reportId
+		@PathVariable Long reportId,
+		@AuthenticationPrincipal CustomUserDetails userDetails
 	) {
-		repairReportService.deleteRepairReport(reportId);
+		repairReportService.deleteRepairReport(
+			reportId,
+			userDetails.getUser()
+		);
 
 		return ResponseEntity.noContent().build();
 	}

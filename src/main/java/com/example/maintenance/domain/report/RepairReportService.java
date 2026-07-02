@@ -24,6 +24,7 @@ import com.example.maintenance.domain.report.dto.ReportStatusHistoryResponse;
 import com.example.maintenance.domain.technician.Technician;
 import com.example.maintenance.domain.technician.TechnicianRepository;
 import com.example.maintenance.domain.user.User;
+import com.example.maintenance.global.error.ForbiddenException;
 import com.example.maintenance.global.error.NotFoundException;
 
 import lombok.RequiredArgsConstructor;
@@ -94,13 +95,25 @@ public class RepairReportService {
 		return toResponse(repairReport);
 	}
 
+	// 본인이 생성한 리포트만 수정 / 삭제 / 제출 / 재제출 가능
+	private void validateReportOwner(RepairReport repairReport, User currentUser) {
+		Long reportOwnerUserId = repairReport.getTechnician().getUser().getId();
+
+		if (!reportOwnerUserId.equals(currentUser.getId())) {
+			throw new ForbiddenException("본인 리포트만 처리할 수 있습니다.");
+		}
+	}
+
 	@Transactional
 	public RepairReportResponse updateRepairReport(
 		Long reportId,
-		RepairReportUpdateRequest request
+		RepairReportUpdateRequest request,
+		User currentUser
 	) {
 		RepairReport repairReport = repairReportRepository.findByIdAndDeletedFalse(reportId)
 			.orElseThrow(() -> new NotFoundException("리포트를 찾을 수 없습니다."));
+
+		validateReportOwner(repairReport, currentUser);
 
 		repairReport.update(
 			request.title(),
@@ -114,9 +127,11 @@ public class RepairReportService {
 	}
 
 	@Transactional
-	public void deleteRepairReport(Long reportId) {
+	public void deleteRepairReport(Long reportId, User currentUser) {
 		RepairReport repairReport = repairReportRepository.findByIdAndDeletedFalse(reportId)
 			.orElseThrow(() -> new NotFoundException("리포트를 찾을 수 없습니다."));
+
+		validateReportOwner(repairReport, currentUser);
 
 		repairReport.delete();
 	}
@@ -129,6 +144,8 @@ public class RepairReportService {
 	) {
 		RepairReport repairReport = repairReportRepository.findByIdAndDeletedFalse(reportId)
 			.orElseThrow(() -> new NotFoundException("리포트를 찾을 수 없습니다."));
+
+		validateReportOwner(repairReport, currentUser);
 
 		ReportStatus fromStatus = repairReport.getStatus();
 
@@ -156,6 +173,8 @@ public class RepairReportService {
 		RepairReport repairReport = repairReportRepository.findByIdAndDeletedFalse(reportId)
 			.orElseThrow(() -> new NotFoundException("리포트를 찾을 수 없습니다."));
 
+		validateReportOwner(repairReport, currentUser);
+		
 		ReportStatus fromStatus = repairReport.getStatus();
 
 		repairReport.approve(currentUser);
