@@ -11,10 +11,6 @@ import jakarta.validation.constraints.Size;
 
 public record RepairReportCreateRequest(
 
-	@Schema(description = "기사 ID", example = "1")
-	@NotNull(message = "기사 ID는 필수입니다.")
-	Long technicianId,
-
 	@Schema(description = "장비 ID", example = "1")
 	@NotNull(message = "장비 ID는 필수입니다.")
 	Long deviceId,

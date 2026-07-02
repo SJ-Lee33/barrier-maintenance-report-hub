@@ -43,9 +43,12 @@ public class RepairReportService {
 	private final ReportExportRepository reportExportRepository;
 
 	@Transactional
-	public RepairReportResponse createRepairReport(RepairReportCreateRequest request) {
-		Technician technician = technicianRepository.findById(request.technicianId())
-			.orElseThrow(() -> new NotFoundException("기사를 찾을 수 없습니다."));
+	public RepairReportResponse createRepairReport(
+		RepairReportCreateRequest request,
+		User currentUser
+	) {
+		Technician technician = technicianRepository.findByUserId(currentUser.getId())
+			.orElseThrow(() -> new NotFoundException("현재 로그인한 사용자와 연결된 기사 프로필을 찾을 수 없습니다."));
 
 		Device device = deviceRepository.findById(request.deviceId())
 			.orElseThrow(() -> new NotFoundException("장비를 찾을 수 없습니다."));
@@ -53,7 +56,7 @@ public class RepairReportService {
 		List<ErrorType> errorTypes = errorTypeRepository.findAllById(request.errorTypeIds());
 
 		if (errorTypes.size() != request.errorTypeIds().size()) {
-			throw new NotFoundException("존재하지 않는 오류 유형이 포함되어 있습니다.");
+			throw new IllegalArgumentException("존재하지 않는 오류 유형이 포함되어 있습니다.");
 		}
 
 		RepairReport repairReport = new RepairReport(
@@ -74,11 +77,7 @@ public class RepairReportService {
 
 		reportErrorTypeRepository.saveAll(reportErrorTypes);
 
-		List<ReportErrorTypeResponse> errorTypeResponses = reportErrorTypes.stream()
-			.map(ReportErrorTypeResponse::from)
-			.toList();
-
-		return RepairReportResponse.of(savedRepairReport, errorTypeResponses);
+		return toResponse(savedRepairReport);
 	}
 
 	public List<RepairReportResponse> getRepairReports() {
@@ -174,7 +173,7 @@ public class RepairReportService {
 			.orElseThrow(() -> new NotFoundException("리포트를 찾을 수 없습니다."));
 
 		validateReportOwner(repairReport, currentUser);
-		
+
 		ReportStatus fromStatus = repairReport.getStatus();
 
 		repairReport.approve(currentUser);

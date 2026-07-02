@@ -60,9 +60,13 @@ public class RepairReportController {
 	})
 	@PostMapping
 	public ResponseEntity<RepairReportResponse> createRepairReport(
-		@Valid @RequestBody RepairReportCreateRequest request
+		@Valid @RequestBody RepairReportCreateRequest request,
+		@AuthenticationPrincipal CustomUserDetails userDetails
 	) {
-		RepairReportResponse response = repairReportService.createRepairReport(request);
+		RepairReportResponse response = repairReportService.createRepairReport(
+			request,
+			userDetails.getUser()
+		);
 
 		return ResponseEntity
 			.status(HttpStatus.CREATED)
