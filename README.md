@@ -104,7 +104,14 @@ REVIEWING → REJECTED → RESUBMITTED → SUBMITTED
 
 **users**
 
-- id, name, email, password, role, created_at
+- id, name, email, phone, password, role, created_at, updated_at
+
+```text
+email은 unique 제약을 가진다.
+name, phone 조합은 unique 제약을 가진다.
+같은 이름과 휴대폰 번호로 다른 이메일을 사용해 중복 가입하는 것을 방지한다.
+password는 BCrypt로 암호화하여 저장한다.
+```
 
 **technicians**
 
@@ -212,6 +219,13 @@ repair_reports 1 ── N report_exports
 ## API 명세 (주요 엔드포인트)
 
 ```
+# 인증
+POST   /api/auth/signup
+POST   /api/auth/login
+GET    /api/auth/me
+
+> `/api/auth/login` 성공 시 JWT accessToken을 발급하며, 이후 인증이 필요한 API는 `Authorization: Bearer {accessToken}` 헤더를 사용한다.
+
 # 리포트
 POST   /api/repair-reports
 GET    /api/repair-reports
@@ -256,6 +270,12 @@ GET    /api/statistics/technicians/performance
 | TECHNICIAN | 본인 리포트 등록·조회·수정, 이미지 업로드 |
 | MANAGER    | 전체 리포트 조회, 승인·반려, Export |
 | ADMIN      | 사용자 관리, 오류 유형 관리, 통계 조회  |
+
+### 인증 사용자 기반 처리 정책
+
+- 리포트 생성 시 `technicianId`는 요청값으로 받지 않고, JWT 인증된 사용자와 연결된 `technicians` 정보를 사용한다.
+- 제출·검토·승인·반려·재제출·Export 시 `changedByUserId`는 요청값으로 받지 않고, JWT 인증된 현재 사용자를 처리자로 기록한다.
+- TECHNICIAN은 본인 리포트에 대해서만 수정, 삭제, 제출, 재제출할 수 있다.
 
 ---
 
@@ -527,8 +547,29 @@ JUnit5, Mockito, SpringBootTest, Testcontainers (PostgreSQL)
 
 ## 로컬 실행 방법
 
-> TODO: 작성 (Milestone 7 완료 후 업데이트)
+### 1. 환경변수 파일 생성
 
+```bash
+cp .env.example .env
+```
+
+### 2. PostgreSQL 실행
+
+```bash
+docker compose up -d
+```
+
+### 3. 애플리케이션 실행
+
+```bash 
+./run-local.sh
+```
+
+### 4. Swagger UI 접속
+
+```bash 
+http://localhost:8080/swagger-ui/index.html
+```
 
 ---
 
