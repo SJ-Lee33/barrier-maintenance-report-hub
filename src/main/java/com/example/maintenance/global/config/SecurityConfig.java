@@ -58,6 +58,13 @@ public class SecurityConfig {
 				// RepairReport 생성: TECHNICIAN
 				.requestMatchers(HttpMethod.POST, "/api/repair-reports").hasRole("TECHNICIAN")
 
+				// ReportImage 업로드/삭제: TECHNICIAN
+				.requestMatchers(HttpMethod.POST, "/api/repair-reports/*/images").hasRole("TECHNICIAN")
+				.requestMatchers(HttpMethod.DELETE, "/api/repair-reports/*/images/*").hasRole("TECHNICIAN")
+
+				// ReportImage 조회: 로그인 사용자
+				.requestMatchers(HttpMethod.GET, "/api/repair-reports/*/images").authenticated()
+				
 				// RepairReport 상태 변경: TECHNICIAN
 				.requestMatchers(HttpMethod.PATCH, "/api/repair-reports/*/submit").hasRole("TECHNICIAN")
 				.requestMatchers(HttpMethod.PATCH, "/api/repair-reports/*/resubmit").hasRole("TECHNICIAN")

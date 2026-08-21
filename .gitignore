@@ -34,3 +34,6 @@ application-local.properties
 
 # Docker local volumes or temp files
 docker-data/
+
+# upload
+uploads/
