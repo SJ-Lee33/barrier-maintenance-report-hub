@@ -7,6 +7,8 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -29,7 +31,7 @@ public class GlobalExceptionHandler {
 			.status(HttpStatus.NOT_FOUND)
 			.body(response);
 	}
-	
+
 	@ExceptionHandler(ForbiddenException.class)
 	public ResponseEntity<ErrorResponse> handleForbiddenException(
 		ForbiddenException exception,
@@ -120,6 +122,26 @@ public class GlobalExceptionHandler {
 		return ResponseEntity
 			.status(HttpStatus.BAD_REQUEST)
 			.body(response);
+	}
+
+	@ExceptionHandler(MethodArgumentTypeMismatchException.class)
+	public ResponseEntity<ErrorResponse> handleMethodArgumentTypeMismatchException(
+		MethodArgumentTypeMismatchException exception, HttpServletRequest request) {
+		String message = "요청 파라미터 형식이 올바르지 않습니다.";
+		if ("imageType".equals(exception.getName())) {
+			message = "imageType은 BEFORE, AFTER, ETC 중 하나여야 합니다.";
+		}
+		ErrorResponse response = ErrorResponse.of(HttpStatus.BAD_REQUEST.value(),
+			HttpStatus.BAD_REQUEST.getReasonPhrase(), message, request.getRequestURI());
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+	}
+
+	@ExceptionHandler(MaxUploadSizeExceededException.class)
+	public ResponseEntity<ErrorResponse> handleMaxUploadSizeExceededException(MaxUploadSizeExceededException exception,
+		HttpServletRequest request) {
+		ErrorResponse response = ErrorResponse.of(HttpStatus.BAD_REQUEST.value(),
+			HttpStatus.BAD_REQUEST.getReasonPhrase(), "업로드 가능한 파일 크기를 초과했습니다.", request.getRequestURI());
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 	}
 
 	@ExceptionHandler(Exception.class)
