@@ -34,7 +34,8 @@ public class SecurityConfig {
 					"/swagger-ui/**",
 					"/swagger-ui.html",
 					"/v3/api-docs/**",
-					"/uploads/report-images/**"
+					"/uploads/report-images/**",
+					"/exports/reports/**"
 				).permitAll()
 
 				// Auth
@@ -42,7 +43,7 @@ public class SecurityConfig {
 					"/api/auth/signup",
 					"/api/auth/login"
 				).permitAll()
-				
+
 				.requestMatchers("/api/auth/me").authenticated()
 
 				// User 관리: ADMIN만

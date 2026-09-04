@@ -24,5 +24,12 @@ public class WebConfig implements WebMvcConfigurer {
 
 		registry.addResourceHandler("/uploads/report-images/**")
 			.addResourceLocations(uploadPath.toUri().toString() + "/");
+
+		Path exportPath = Path.of(fileStorageProperties.exportDir())
+			.toAbsolutePath()
+			.normalize();
+
+		registry.addResourceHandler("/exports/reports/**")
+			.addResourceLocations(exportPath.toUri().toString() + "/");
 	}
 }
