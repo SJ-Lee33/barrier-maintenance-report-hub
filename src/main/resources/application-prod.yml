@@ -1,0 +1,32 @@
+server:
+  port: ${PORT:8080}
+
+spring:
+  datasource:
+    url: jdbc:postgresql://${DB_HOST}:${DB_PORT:5432}/${DB_NAME}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: false
+    open-in-view: false
+
+jwt:
+  secret: ${JWT_SECRET}
+  access-token-validity: ${JWT_ACCESS_TOKEN_VALIDITY:3600000}
+
+file:
+  upload-dir: /tmp/uploads/report-images
+  max-image-size: 5242880
+  export-dir: /tmp/exports/reports
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true

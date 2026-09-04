@@ -1,5 +1,6 @@
 .git
 .gradle
+build
 uploads
 exports
 test-uploads
