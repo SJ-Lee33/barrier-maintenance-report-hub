@@ -7,26 +7,18 @@ import java.util.UUID;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
 
+import com.example.maintenance.support.ApiTestSupport;
 import com.jayway.jsonpath.JsonPath;
 
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
 @SpringBootTest
-class RepairReportControllerTest {
-
-	private static final String TECH_EMAIL = "tech01@example.com";
-	private static final String MANAGER_EMAIL = "manager01@example.com";
-	private static final String PASSWORD = "password1234";
-	
-	@Autowired
-	private MockMvc mockMvc;
+class RepairReportControllerTest extends ApiTestSupport {
 
 	@Test
 	@DisplayName("기사는 리포트를 생성하고 제출할 수 있다")
@@ -195,27 +187,6 @@ class RepairReportControllerTest {
 					}
 					"""))
 			.andExpect(status().isOk());
-	}
-
-	private String login(String email) throws Exception {
-		String response = mockMvc.perform(post("/api/auth/login")
-				.contentType(MediaType.APPLICATION_JSON)
-				.content("""
-					{
-					  "email": "%s",
-					  "password": "%s"
-					}
-					""".formatted(email, PASSWORD)))
-			.andExpect(status().isOk())
-			.andReturn()
-			.getResponse()
-			.getContentAsString();
-
-		return JsonPath.read(response, "$.accessToken");
-	}
-
-	private String bearer(String token) {
-		return "Bearer " + token;
 	}
 
 	private String unique() {
