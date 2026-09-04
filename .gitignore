@@ -37,3 +37,6 @@ docker-data/
 
 # upload
 uploads/
+
+# export
+exports/

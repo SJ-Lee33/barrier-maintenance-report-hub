@@ -15,7 +15,7 @@ spring:
       hibernate:
         format_sql: true
     show-sql: true
-      
+
   servlet:
     multipart:
     max-file-size: 10MB
@@ -39,3 +39,4 @@ jwt:
 file:
   upload-dir: uploads/report-images
   max-image-size: 5242880
+  export-dir: exports/reports
