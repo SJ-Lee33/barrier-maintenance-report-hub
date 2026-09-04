@@ -707,6 +707,7 @@ test-exports/
 - [사진 업로드 및 파일 관리 구현 보고서](docs/image-upload.md)
 - [Export 기능 문서](docs/export.md)
 - [분석 기능 문서](docs/analytics.md)
+- [포트폴리오 설명 문서](docs/portfolio.md)
 
 ---
 
