@@ -21,10 +21,10 @@ import com.jayway.jsonpath.JsonPath;
 @SpringBootTest
 class AnalyticsControllerTest {
 
-	private static final String TECH_EMAIL = "tech3@example.com";
-	private static final String MANAGER_EMAIL = "manager1@example.com";
+	private static final String TECH_EMAIL = "tech01@example.com";
+	private static final String MANAGER_EMAIL = "manager01@example.com";
 	private static final String PASSWORD = "password1234";
-
+	
 	@Autowired
 	private MockMvc mockMvc;
 
