@@ -403,44 +403,29 @@ Role 기반 접근 제어와 리포트 제출·승인·반려 흐름을 구현�
 
 **구현 기능**
 
-- 승인된 리포트만 export 가능
-- Excel / CSV / JSON 변환
-- 클라이언트 제출용 필드 매핑
-- 누락 필드 검증
+- 외부 제출용 Export DTO 설계
+- RepairReport → 외부 제출용 데이터 매핑
+- JSON Export 파일 생성
+- CSV Export 파일 생성
+- Excel Export 파일 생성
+- Export 파일 로컬 저장
+- Export 파일 URL 접근
 - Export 이력 저장
+- Export 이력 조회 응답 개선
+- Export 권한 및 상태 검증
+- 잘못된 Export 요청 예외 처리
 
-**변환 예시**
+**지원 포맷**
 
-내부 데이터:
+| 형식    | 확장자     |
+|-------|---------|
+| JSON  | `.json` |
+| CSV   | `.csv`  |
+| EXCEL | `.xlsx` |
 
-```json
-{
-  "technicianName": "홍길동",
-  "deviceSerial": "GATE-2024-001",
-  "repairType": "SENSOR_ERROR",
-  "description": "센서 인식 불량으로 부품 교체",
-  "repairedAt": "2026-06-08T14:00:00"
-}
-```
+**구현 문서**
 
-외부 제출용:
-
-```json
-{
-  "작업자": "홍길동",
-  "장비기번": "GATE-2024-001",
-  "고장유형": "센서 오류",
-  "조치내용": "센서 인식 불량으로 부품 교체",
-  "작업일시": "2026-06-08 14:00"
-}
-```
-
-**산출물**
-
-- Export Service
-- Excel/CSV 변환 기능
-- 외부 보고 양식 매핑 문서
-- Export 이력 관리
+- [Export 기능 문서](docs/export.md)
 
 ---
 
@@ -602,3 +587,4 @@ uploads/ 디렉터리는 Git에 포함하지 않는다.
 개발 중 발생한 주요 이슈와 해결 과정은 `docs` 문서에 정리한다.
 
 - [사진 업로드 및 파일 관리 트러블슈팅](docs/image-upload.md)
+- [Export 기능 문서](docs/export.md)
