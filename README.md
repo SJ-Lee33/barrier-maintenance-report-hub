@@ -117,15 +117,15 @@ password는 BCrypt로 암호화하여 저장한다.
 
 - id, user_id, phone, department, emp_no
 
-**devices**
-
-- id, serial_no, location, model_name, installed_at
-
 ```text
 user_id는 users.id를 참조
 user_id는 unique 제약을 가진다. 하나의 user는 하나의 technician 프로필만 가질 수 있다.
 emp_no는 unique 제약을 가진다.
 ```
+
+**devices**
+
+- id, serial_no, location, model_name, installed_at
 
 **repair_reports**
 
@@ -239,17 +239,16 @@ PATCH  /api/repair-reports/{reportId}/review
 PATCH  /api/repair-reports/{reportId}/approve
 PATCH  /api/repair-reports/{reportId}/reject
 PATCH  /api/repair-reports/{reportId}/resubmit
-POST   /api/repair-reports/{reportId}/export
 GET    /api/repair-reports/{reportId}/histories
 
 # 이미지
 POST   /api/repair-reports/{reportId}/images
+GET    /api/repair-reports/{reportId}/images
 DELETE /api/repair-reports/{reportId}/images/{imageId}
 
 # Export
 POST   /api/repair-reports/{reportId}/export
-GET    /api/repair-reports/{reportId}/export/excel
-GET    /api/repair-reports/{reportId}/export/json
+GET    /api/repair-reports/{reportId}/exports
 
 # 통계
 GET    /api/statistics/error-types/top
@@ -265,17 +264,18 @@ GET    /api/statistics/technicians/performance
 
 ## 권한 구조
 
-| Role       | 권한                       |
-|------------|--------------------------|
-| TECHNICIAN | 본인 리포트 등록·조회·수정, 이미지 업로드 |
-| MANAGER    | 전체 리포트 조회, 승인·반려, Export |
-| ADMIN      | 사용자 관리, 오류 유형 관리, 통계 조회  |
+| Role       | 권한                                           |
+|------------|----------------------------------------------|
+| TECHNICIAN | 본인 리포트 등록·조회·수정·삭제·제출·재제출, 본인 리포트 이미지 업로드·삭제 |
+| MANAGER    | 전체 리포트 조회, 이미지 조회, 검토·승인·반려, Export          |
+| ADMIN      | 사용자 관리, 오류 유형 관리, 통계 조회                      |
 
 ### 인증 사용자 기반 처리 정책
 
 - 리포트 생성 시 `technicianId`는 요청값으로 받지 않고, JWT 인증된 사용자와 연결된 `technicians` 정보를 사용한다.
 - 제출·검토·승인·반려·재제출·Export 시 `changedByUserId`는 요청값으로 받지 않고, JWT 인증된 현재 사용자를 처리자로 기록한다.
-- TECHNICIAN은 본인 리포트에 대해서만 수정, 삭제, 제출, 재제출할 수 있다.
+- TECHNICIAN은 본인 리포트에 대해서만 이미지를 업로드·삭제할 수 있다.
+- MANAGER는 리포트 이미지를 조회할 수 있지만 업로드·삭제는 할 수 없다.
 
 ---
 
@@ -321,11 +321,12 @@ Spring Boot로 유지보수 리포트를 등록하고 조회할 수 있게 만�
 - PostgreSQL 기반 스키마
 - Swagger/OpenAPI 문서
 
-+) 개발용 사용자 API
++) 사용자 관리 API
 POST /api/users
 GET /api/users
 GET /api/users/{userId}
--> JWT 인증 구현 후 삭제 필요
+
+-> TODO: JWT 인증 구현 후 ADMIN 전용 API로 제한
 
 ---
 
@@ -370,11 +371,14 @@ Role 기반 접근 제어와 리포트 제출·승인·반려 흐름을 구현�
 
 **구현 기능**
 
-- 수리 전/후 사진 다중 업로드
-- 리포트-이미지 연결
-- 파일 확장자·용량 검증
+- 수리 전/후/기타 사진 다중 업로드
+- 리포트-이미지 메타데이터 연결
+- 이미지 목록 조회
+- 파일 확장자·MIME type·용량·빈 파일 검증
 - 업로드 실패 예외 처리
-- 삭제 시 파일 정리
+- 삭제 시 DB row 및 실제 파일 정리
+- 업로드된 이미지 URL 접근
+- 이미지 업로드·삭제 권한 검증
 
 **구현 순서**
 
@@ -386,6 +390,10 @@ Role 기반 접근 제어와 리포트 제출·승인·반려 흐름을 구현�
 - Multipart file upload API
 - 파일 메타데이터 테이블
 - 이미지 URL 조회 API
+
+**구현 문서**
+
+- [사진 업로드 및 파일 관리 구현 보고서](docs/image-upload.md)
 
 ---
 
@@ -571,8 +579,26 @@ docker compose up -d
 http://localhost:8080/swagger-ui/index.html
 ```
 
+### 5. 업로드 파일 저장 경로
+
+로컬 환경에서 업로드된 이미지는 아래 경로에 저장된다.
+
+```bash
+uploads/report-images/{reportId}/{uuid}.{extension}
+```
+
+업로드된 이미지는 다음 URL 형식으로 접근할 수 있다.
+
+```bash
+http://localhost:8080/uploads/report-images/{reportId}/{filename}
+```
+
+uploads/ 디렉터리는 Git에 포함하지 않는다.
+
 ---
 
 ## 트러블슈팅
 
-> TODO: 작성 (개발 진행 중 업데이트)
+개발 중 발생한 주요 이슈와 해결 과정은 `docs` 문서에 정리한다.
+
+- [사진 업로드 및 파일 관리 트러블슈팅](docs/image-upload.md)
