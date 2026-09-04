@@ -3,6 +3,7 @@ package com.example.maintenance.global.error;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageConversionException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -162,4 +163,26 @@ public class GlobalExceptionHandler {
 			.body(response);
 	}
 
+	@ExceptionHandler(HttpMessageConversionException.class)
+	public ResponseEntity<ErrorResponse> handleHttpMessageConversionException(
+		HttpMessageConversionException exception,
+		HttpServletRequest request
+	) {
+		String message = "요청 본문 형식이 올바르지 않습니다.";
+
+		if (exception.getMessage() != null && exception.getMessage().contains("ExportType")) {
+			message = "지원하지 않는 Export 형식입니다. exportType은 JSON, CSV, EXCEL 중 하나여야 합니다.";
+		}
+
+		ErrorResponse errorResponse = ErrorResponse.of(
+			HttpStatus.BAD_REQUEST.value(),
+			"Bad Request",
+			message,
+			request.getRequestURI()
+		);
+
+		return ResponseEntity
+			.status(HttpStatus.BAD_REQUEST)
+			.body(errorResponse);
+	}
 }
