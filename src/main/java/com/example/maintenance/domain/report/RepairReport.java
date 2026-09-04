@@ -209,7 +209,7 @@ public class RepairReport extends BaseTimeEntity {
 	}
 
 	// 검토
-	public void reviewing() {
+	public void startReview() {
 		if (this.status != ReportStatus.SUBMITTED) {
 			throw new IllegalStateException("검토를 시작할 수 없는 상태입니다.");
 		}
@@ -219,12 +219,16 @@ public class RepairReport extends BaseTimeEntity {
 
 	// 내보내기
 	public void export(User exportedBy) {
-		if (this.status != ReportStatus.APPROVED) {
-			throw new IllegalStateException("승인된 리포트만 내보내기할 수 있습니다.");
-		}
+		validateExportableStatus();
 
 		this.status = ReportStatus.EXPORTED;
 		this.exportedAt = LocalDateTime.now();
 		this.exportedBy = exportedBy;
+	}
+
+	private void validateExportableStatus() {
+		if (this.status != ReportStatus.APPROVED && this.status != ReportStatus.EXPORTED) {
+			throw new IllegalStateException("승인 또는 내보내기 완료 상태의 리포트만 Export할 수 있습니다.");
+		}
 	}
 }

@@ -14,9 +14,11 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.maintenance.domain.user.dto.UserCreateRequest;
 import com.example.maintenance.domain.user.dto.UserResponse;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+@Tag(name = "User API", description = "개발용 사용자 등록 및 조회 API")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/users")

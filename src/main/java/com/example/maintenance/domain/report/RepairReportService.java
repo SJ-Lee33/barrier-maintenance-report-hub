@@ -9,8 +9,13 @@ import com.example.maintenance.domain.device.Device;
 import com.example.maintenance.domain.device.DeviceRepository;
 import com.example.maintenance.domain.errortype.ErrorType;
 import com.example.maintenance.domain.errortype.ErrorTypeRepository;
+import com.example.maintenance.domain.export.CsvExportFileGenerator;
+import com.example.maintenance.domain.export.ExcelExportFileGenerator;
+import com.example.maintenance.domain.export.ExportMappingService;
+import com.example.maintenance.domain.export.JsonExportFileGenerator;
 import com.example.maintenance.domain.export.ReportExport;
 import com.example.maintenance.domain.export.ReportExportRepository;
+import com.example.maintenance.domain.export.dto.ExternalReportExportResponse;
 import com.example.maintenance.domain.history.ReportStatusHistory;
 import com.example.maintenance.domain.history.ReportStatusHistoryRepository;
 import com.example.maintenance.domain.report.dto.RepairReportCreateRequest;
@@ -24,8 +29,10 @@ import com.example.maintenance.domain.report.dto.ReportStatusHistoryResponse;
 import com.example.maintenance.domain.technician.Technician;
 import com.example.maintenance.domain.technician.TechnicianRepository;
 import com.example.maintenance.domain.user.User;
-import com.example.maintenance.domain.user.UserRepository;
+import com.example.maintenance.global.error.ForbiddenException;
 import com.example.maintenance.global.error.NotFoundException;
+import com.example.maintenance.global.storage.ExportFileStorage;
+import com.example.maintenance.global.storage.ExportFileStorage.ExportFilePath;
 
 import lombok.RequiredArgsConstructor;
 
@@ -40,13 +47,15 @@ public class RepairReportService {
 	private final DeviceRepository deviceRepository;
 	private final ErrorTypeRepository errorTypeRepository;
 	private final ReportStatusHistoryRepository reportStatusHistoryRepository;
-	private final UserRepository userRepository;
 	private final ReportExportRepository reportExportRepository;
 
 	@Transactional
-	public RepairReportResponse createRepairReport(RepairReportCreateRequest request) {
-		Technician technician = technicianRepository.findById(request.technicianId())
-			.orElseThrow(() -> new NotFoundException("기사를 찾을 수 없습니다."));
+	public RepairReportResponse createRepairReport(
+		RepairReportCreateRequest request,
+		User currentUser
+	) {
+		Technician technician = technicianRepository.findByUserId(currentUser.getId())
+			.orElseThrow(() -> new NotFoundException("현재 로그인한 사용자와 연결된 기사 프로필을 찾을 수 없습니다."));
 
 		Device device = deviceRepository.findById(request.deviceId())
 			.orElseThrow(() -> new NotFoundException("장비를 찾을 수 없습니다."));
@@ -54,7 +63,7 @@ public class RepairReportService {
 		List<ErrorType> errorTypes = errorTypeRepository.findAllById(request.errorTypeIds());
 
 		if (errorTypes.size() != request.errorTypeIds().size()) {
-			throw new NotFoundException("존재하지 않는 오류 유형이 포함되어 있습니다.");
+			throw new IllegalArgumentException("존재하지 않는 오류 유형이 포함되어 있습니다.");
 		}
 
 		RepairReport repairReport = new RepairReport(
@@ -75,11 +84,7 @@ public class RepairReportService {
 
 		reportErrorTypeRepository.saveAll(reportErrorTypes);
 
-		List<ReportErrorTypeResponse> errorTypeResponses = reportErrorTypes.stream()
-			.map(ReportErrorTypeResponse::from)
-			.toList();
-
-		return RepairReportResponse.of(savedRepairReport, errorTypeResponses);
+		return toResponse(savedRepairReport);
 	}
 
 	public List<RepairReportResponse> getRepairReports() {
@@ -96,13 +101,25 @@ public class RepairReportService {
 		return toResponse(repairReport);
 	}
 
+	// 본인이 생성한 리포트만 수정 / 삭제 / 제출 / 재제출 가능
+	private void validateReportOwner(RepairReport repairReport, User currentUser) {
+		Long reportOwnerUserId = repairReport.getTechnician().getUser().getId();
+
+		if (!reportOwnerUserId.equals(currentUser.getId())) {
+			throw new ForbiddenException("본인 리포트만 처리할 수 있습니다.");
+		}
+	}
+
 	@Transactional
 	public RepairReportResponse updateRepairReport(
 		Long reportId,
-		RepairReportUpdateRequest request
+		RepairReportUpdateRequest request,
+		User currentUser
 	) {
 		RepairReport repairReport = repairReportRepository.findByIdAndDeletedFalse(reportId)
 			.orElseThrow(() -> new NotFoundException("리포트를 찾을 수 없습니다."));
+
+		validateReportOwner(repairReport, currentUser);
 
 		repairReport.update(
 			request.title(),
@@ -116,9 +133,11 @@ public class RepairReportService {
 	}
 
 	@Transactional
-	public void deleteRepairReport(Long reportId) {
+	public void deleteRepairReport(Long reportId, User currentUser) {
 		RepairReport repairReport = repairReportRepository.findByIdAndDeletedFalse(reportId)
 			.orElseThrow(() -> new NotFoundException("리포트를 찾을 수 없습니다."));
+
+		validateReportOwner(repairReport, currentUser);
 
 		repairReport.delete();
 	}
@@ -126,27 +145,27 @@ public class RepairReportService {
 	@Transactional
 	public RepairReportResponse submitRepairReport(
 		Long reportId,
-		ReportStatusChangeRequest request
+		ReportStatusChangeRequest request,
+		User currentUser
 	) {
 		RepairReport repairReport = repairReportRepository.findByIdAndDeletedFalse(reportId)
 			.orElseThrow(() -> new NotFoundException("리포트를 찾을 수 없습니다."));
 
-		User changedBy = userRepository.findById(request.changedByUserId())
-			.orElseThrow(() -> new NotFoundException("상태 변경자를 찾을 수 없습니다."));
+		validateReportOwner(repairReport, currentUser);
 
 		ReportStatus fromStatus = repairReport.getStatus();
 
-		repairReport.submit(changedBy);
+		repairReport.submit(currentUser);
 
-		ReportStatusHistory history = new ReportStatusHistory(
-			repairReport,
-			fromStatus,
-			repairReport.getStatus(),
-			changedBy,
-			request.reason()
+		reportStatusHistoryRepository.save(
+			new ReportStatusHistory(
+				repairReport,
+				fromStatus,
+				repairReport.getStatus(),
+				currentUser,
+				request.reason()
+			)
 		);
-
-		reportStatusHistoryRepository.save(history);
 
 		return toResponse(repairReport);
 	}
@@ -154,27 +173,25 @@ public class RepairReportService {
 	@Transactional
 	public RepairReportResponse approveRepairReport(
 		Long reportId,
-		ReportStatusChangeRequest request
+		ReportStatusChangeRequest request,
+		User currentUser
 	) {
 		RepairReport repairReport = repairReportRepository.findByIdAndDeletedFalse(reportId)
 			.orElseThrow(() -> new NotFoundException("리포트를 찾을 수 없습니다."));
 
-		User changedBy = userRepository.findById(request.changedByUserId())
-			.orElseThrow(() -> new NotFoundException("상태 변경자를 찾을 수 없습니다."));
-
 		ReportStatus fromStatus = repairReport.getStatus();
 
-		repairReport.approve(changedBy);
+		repairReport.approve(currentUser);
 
-		ReportStatusHistory history = new ReportStatusHistory(
-			repairReport,
-			fromStatus,
-			repairReport.getStatus(),
-			changedBy,
-			request.reason()
+		reportStatusHistoryRepository.save(
+			new ReportStatusHistory(
+				repairReport,
+				fromStatus,
+				repairReport.getStatus(),
+				currentUser,
+				request.reason()
+			)
 		);
-
-		reportStatusHistoryRepository.save(history);
 
 		return toResponse(repairReport);
 	}
@@ -182,27 +199,25 @@ public class RepairReportService {
 	@Transactional
 	public RepairReportResponse rejectRepairReport(
 		Long reportId,
-		ReportStatusChangeRequest request
+		ReportStatusChangeRequest request,
+		User currentUser
 	) {
 		RepairReport repairReport = repairReportRepository.findByIdAndDeletedFalse(reportId)
 			.orElseThrow(() -> new NotFoundException("리포트를 찾을 수 없습니다."));
-
-		User changedBy = userRepository.findById(request.changedByUserId())
-			.orElseThrow(() -> new NotFoundException("상태 변경자를 찾을 수 없습니다."));
 
 		ReportStatus fromStatus = repairReport.getStatus();
 
 		repairReport.reject();
 
-		ReportStatusHistory history = new ReportStatusHistory(
-			repairReport,
-			fromStatus,
-			repairReport.getStatus(),
-			changedBy,
-			request.reason()
+		reportStatusHistoryRepository.save(
+			new ReportStatusHistory(
+				repairReport,
+				fromStatus,
+				repairReport.getStatus(),
+				currentUser,
+				request.reason()
+			)
 		);
-
-		reportStatusHistoryRepository.save(history);
 
 		return toResponse(repairReport);
 	}
@@ -210,27 +225,27 @@ public class RepairReportService {
 	@Transactional
 	public RepairReportResponse resubmitRepairReport(
 		Long reportId,
-		ReportStatusChangeRequest request
+		ReportStatusChangeRequest request,
+		User currentUser
 	) {
 		RepairReport repairReport = repairReportRepository.findByIdAndDeletedFalse(reportId)
 			.orElseThrow(() -> new NotFoundException("리포트를 찾을 수 없습니다."));
 
-		User changedBy = userRepository.findById(request.changedByUserId())
-			.orElseThrow(() -> new NotFoundException("상태 변경자를 찾을 수 없습니다."));
+		validateReportOwner(repairReport, currentUser);
 
 		ReportStatus fromStatus = repairReport.getStatus();
 
 		repairReport.resubmit();
 
-		ReportStatusHistory history = new ReportStatusHistory(
-			repairReport,
-			fromStatus,
-			repairReport.getStatus(),
-			changedBy,
-			request.reason()
+		reportStatusHistoryRepository.save(
+			new ReportStatusHistory(
+				repairReport,
+				fromStatus,
+				repairReport.getStatus(),
+				currentUser,
+				request.reason()
+			)
 		);
-
-		reportStatusHistoryRepository.save(history);
 
 		return toResponse(repairReport);
 	}
@@ -238,27 +253,25 @@ public class RepairReportService {
 	@Transactional
 	public RepairReportResponse reviewingRepairReport(
 		Long reportId,
-		ReportStatusChangeRequest request
+		ReportStatusChangeRequest request,
+		User currentUser
 	) {
 		RepairReport repairReport = repairReportRepository.findByIdAndDeletedFalse(reportId)
 			.orElseThrow(() -> new NotFoundException("리포트를 찾을 수 없습니다."));
 
-		User changedBy = userRepository.findById(request.changedByUserId())
-			.orElseThrow(() -> new NotFoundException("상태 변경자를 찾을 수 없습니다."));
-
 		ReportStatus fromStatus = repairReport.getStatus();
 
-		repairReport.reviewing();
+		repairReport.startReview();
 
-		ReportStatusHistory history = new ReportStatusHistory(
-			repairReport,
-			fromStatus,
-			repairReport.getStatus(),
-			changedBy,
-			request.reason()
+		reportStatusHistoryRepository.save(
+			new ReportStatusHistory(
+				repairReport,
+				fromStatus,
+				repairReport.getStatus(),
+				currentUser,
+				request.reason()
+			)
 		);
-
-		reportStatusHistoryRepository.save(history);
 
 		return toResponse(repairReport);
 	}
@@ -266,36 +279,57 @@ public class RepairReportService {
 	@Transactional
 	public RepairReportResponse exportRepairReport(
 		Long reportId,
-		RepairReportExportRequest request
+		RepairReportExportRequest request,
+		User currentUser
 	) {
 		RepairReport repairReport = repairReportRepository.findByIdAndDeletedFalse(reportId)
 			.orElseThrow(() -> new NotFoundException("리포트를 찾을 수 없습니다."));
 
-		User changedBy = userRepository.findById(request.changedByUserId())
-			.orElseThrow(() -> new NotFoundException("Export 실행자를 찾을 수 없습니다."));
-
 		ReportStatus fromStatus = repairReport.getStatus();
 
-		repairReport.export(changedBy);
+		repairReport.export(currentUser);
 
-		ReportExport reportExport = new ReportExport(
-			repairReport,
-			request.exportType(),
-			changedBy,
-			request.fileUrl()
+		ExportFilePath exportFilePath = exportFileStorage.createExportFilePath(
+			repairReport.getId(),
+			request.exportType()
 		);
 
-		reportExportRepository.save(reportExport);
+		ExternalReportExportResponse externalReport =
+			exportMappingService.toExternalReport(repairReport);
 
-		ReportStatusHistory history = new ReportStatusHistory(
-			repairReport,
-			fromStatus,
-			repairReport.getStatus(),
-			changedBy,
-			request.reason()
+		switch (request.exportType()) {
+			case JSON -> jsonExportFileGenerator.generate(
+				externalReport,
+				exportFilePath.filePath()
+			);
+			case CSV -> csvExportFileGenerator.generate(
+				externalReport,
+				exportFilePath.filePath()
+			);
+			case EXCEL -> excelExportFileGenerator.generate(
+				externalReport,
+				exportFilePath.filePath()
+			);
+		}
+
+		reportExportRepository.save(
+			new ReportExport(
+				repairReport,
+				request.exportType(),
+				currentUser,
+				exportFilePath.fileUrl()
+			)
 		);
 
-		reportStatusHistoryRepository.save(history);
+		reportStatusHistoryRepository.save(
+			new ReportStatusHistory(
+				repairReport,
+				fromStatus,
+				repairReport.getStatus(),
+				currentUser,
+				request.reason()
+			)
+		);
 
 		return toResponse(repairReport);
 	}
@@ -332,4 +366,11 @@ public class RepairReportService {
 			.map(ReportExportResponse::from)
 			.toList();
 	}
+
+	// Export 의존성
+	private final ExportMappingService exportMappingService;
+	private final ExportFileStorage exportFileStorage;
+	private final JsonExportFileGenerator jsonExportFileGenerator;
+	private final CsvExportFileGenerator csvExportFileGenerator;
+	private final ExcelExportFileGenerator excelExportFileGenerator;
 }

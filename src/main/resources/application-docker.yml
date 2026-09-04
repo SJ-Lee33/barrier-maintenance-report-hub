@@ -1,0 +1,23 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://db:5432/barrier_report
+    username: ${DB_USERNAME:local_user}
+    password: ${DB_PASSWORD:local_password}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+    open-in-view: false
+
+jwt:
+  secret: ${JWT_SECRET}
+  access-token-validity: ${JWT_ACCESS_TOKEN_VALIDITY:3600000}
+
+file:
+  upload-dir: /app/uploads/report-images
+  max-image-size: 5242880
+  export-dir: /app/exports/reports

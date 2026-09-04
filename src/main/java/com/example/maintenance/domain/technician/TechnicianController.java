@@ -14,9 +14,11 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.maintenance.domain.technician.dto.TechnicianCreateRequest;
 import com.example.maintenance.domain.technician.dto.TechnicianResponse;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+@Tag(name = "Technician API", description = "현장 기사 프로필 등록 및 조회 API")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/technicians")

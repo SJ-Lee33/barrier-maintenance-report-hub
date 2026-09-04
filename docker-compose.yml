@@ -1,15 +1,32 @@
 services:
-  postgres:
+  db:
     image: postgres:16
     container_name: barrier-report-postgres
-    ports:
-      - "5432:5432"
     environment:
       POSTGRES_DB: barrier_report
       POSTGRES_USER: local_user
       POSTGRES_PASSWORD: local_password
+    ports:
+      - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - barrier-report-db-data:/var/lib/postgresql/data
+
+  app:
+    build: .
+    container_name: barrier-report-app
+    depends_on:
+      - db
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      DB_USERNAME: local_user
+      DB_PASSWORD: local_password
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_ACCESS_TOKEN_VALIDITY: ${JWT_ACCESS_TOKEN_VALIDITY:-3600000}
+    volumes:
+      - ./uploads:/app/uploads
+      - ./exports:/app/exports
 
 volumes:
-  postgres_data:
+  barrier-report-db-data:

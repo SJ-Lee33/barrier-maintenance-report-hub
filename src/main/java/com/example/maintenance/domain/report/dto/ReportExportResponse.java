@@ -12,10 +12,14 @@ public record ReportExportResponse(
 	Long exportedByUserId,
 	String exportedByUserName,
 	LocalDateTime exportedAt,
-	String fileUrl
+	String fileUrl,
+	String downloadUrl,
+	String fileName
 ) {
 
 	public static ReportExportResponse from(ReportExport reportExport) {
+		String fileUrl = reportExport.getFileUrl();
+
 		return new ReportExportResponse(
 			reportExport.getId(),
 			reportExport.getRepairReport().getId(),
@@ -23,7 +27,31 @@ public record ReportExportResponse(
 			reportExport.getExportedBy().getId(),
 			reportExport.getExportedBy().getName(),
 			reportExport.getExportedAt(),
-			reportExport.getFileUrl()
+			fileUrl,
+			createDownloadUrl(fileUrl),
+			extractFileName(fileUrl)
 		);
+	}
+
+	private static String createDownloadUrl(String fileUrl) {
+		if (fileUrl == null || fileUrl.isBlank()) {
+			return "";
+		}
+
+		return "http://localhost:8080" + fileUrl;
+	}
+
+	private static String extractFileName(String fileUrl) {
+		if (fileUrl == null || fileUrl.isBlank()) {
+			return "";
+		}
+
+		int lastSlashIndex = fileUrl.lastIndexOf("/");
+
+		if (lastSlashIndex == -1) {
+			return fileUrl;
+		}
+
+		return fileUrl.substring(lastSlashIndex + 1);
 	}
 }

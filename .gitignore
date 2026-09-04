@@ -24,7 +24,7 @@ logs/
 
 # Environment variables
 .env
-.env.*
+!.env.example
 application-local.yml
 application-local.properties
 
@@ -34,3 +34,13 @@ application-local.properties
 
 # Docker local volumes or temp files
 docker-data/
+
+# upload
+uploads/
+
+# export
+exports/
+
+# test
+test-uploads/
+test-exports/

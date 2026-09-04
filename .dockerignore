@@ -1,0 +1,9 @@
+.git
+.gradle
+uploads
+exports
+test-uploads
+test-exports
+README_portfolio.md
+*.log
+.env

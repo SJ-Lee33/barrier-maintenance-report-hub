@@ -10,8 +10,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.maintenance.domain.errortype.dto.ErrorTypeResponse;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
+@Tag(name = "Error Type API", description = "오류 유형 조회 API")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/error-types")

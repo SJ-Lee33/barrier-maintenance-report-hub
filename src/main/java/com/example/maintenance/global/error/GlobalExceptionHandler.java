@@ -1,11 +1,15 @@
 package com.example.maintenance.global.error;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageConversionException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -26,6 +30,23 @@ public class GlobalExceptionHandler {
 
 		return ResponseEntity
 			.status(HttpStatus.NOT_FOUND)
+			.body(response);
+	}
+
+	@ExceptionHandler(ForbiddenException.class)
+	public ResponseEntity<ErrorResponse> handleForbiddenException(
+		ForbiddenException exception,
+		HttpServletRequest request
+	) {
+		ErrorResponse response = ErrorResponse.of(
+			HttpStatus.FORBIDDEN.value(),
+			HttpStatus.FORBIDDEN.getReasonPhrase(),
+			exception.getMessage(),
+			request.getRequestURI()
+		);
+
+		return ResponseEntity
+			.status(HttpStatus.FORBIDDEN)
 			.body(response);
 	}
 
@@ -63,6 +84,23 @@ public class GlobalExceptionHandler {
 			.body(response);
 	}
 
+	@ExceptionHandler(DataIntegrityViolationException.class)
+	public ResponseEntity<ErrorResponse> handleDataIntegrityViolationException(
+		DataIntegrityViolationException exception,
+		HttpServletRequest request
+	) {
+		ErrorResponse response = ErrorResponse.of(
+			HttpStatus.BAD_REQUEST.value(),
+			HttpStatus.BAD_REQUEST.getReasonPhrase(),
+			"이미 존재하는 값이거나 제약 조건을 위반했습니다.",
+			request.getRequestURI()
+		);
+
+		return ResponseEntity
+			.status(HttpStatus.BAD_REQUEST)
+			.body(response);
+	}
+
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public ResponseEntity<ErrorResponse> handleValidationException(
 		MethodArgumentNotValidException exception,
@@ -87,6 +125,27 @@ public class GlobalExceptionHandler {
 			.body(response);
 	}
 
+	@ExceptionHandler(MethodArgumentTypeMismatchException.class)
+	public ResponseEntity<ErrorResponse> handleMethodArgumentTypeMismatchException(
+		MethodArgumentTypeMismatchException exception, HttpServletRequest request) {
+		String message = "요청 파라미터 형식이 올바르지 않습니다.";
+		if ("imageType".equals(exception.getName())) {
+			message = "imageType은 BEFORE, AFTER, ETC 중 하나여야 합니다.";
+		}
+		ErrorResponse response = ErrorResponse.of(HttpStatus.BAD_REQUEST.value(),
+			HttpStatus.BAD_REQUEST.getReasonPhrase(), message, request.getRequestURI());
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+	}
+
+	// TODO: 파일 크기 초과했으면 경고만 하지 말고 압축 진행하면 어떨까
+	@ExceptionHandler(MaxUploadSizeExceededException.class)
+	public ResponseEntity<ErrorResponse> handleMaxUploadSizeExceededException(MaxUploadSizeExceededException exception,
+		HttpServletRequest request) {
+		ErrorResponse response = ErrorResponse.of(HttpStatus.BAD_REQUEST.value(),
+			HttpStatus.BAD_REQUEST.getReasonPhrase(), "업로드 가능한 파일 크기를 초과했습니다.", request.getRequestURI());
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+	}
+
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<ErrorResponse> handleException(
 		Exception exception,
@@ -102,5 +161,28 @@ public class GlobalExceptionHandler {
 		return ResponseEntity
 			.status(HttpStatus.INTERNAL_SERVER_ERROR)
 			.body(response);
+	}
+
+	@ExceptionHandler(HttpMessageConversionException.class)
+	public ResponseEntity<ErrorResponse> handleHttpMessageConversionException(
+		HttpMessageConversionException exception,
+		HttpServletRequest request
+	) {
+		String message = "요청 본문 형식이 올바르지 않습니다.";
+
+		if (exception.getMessage() != null && exception.getMessage().contains("ExportType")) {
+			message = "지원하지 않는 Export 형식입니다. exportType은 JSON, CSV, EXCEL 중 하나여야 합니다.";
+		}
+
+		ErrorResponse errorResponse = ErrorResponse.of(
+			HttpStatus.BAD_REQUEST.value(),
+			"Bad Request",
+			message,
+			request.getRequestURI()
+		);
+
+		return ResponseEntity
+			.status(HttpStatus.BAD_REQUEST)
+			.body(errorResponse);
 	}
 }
