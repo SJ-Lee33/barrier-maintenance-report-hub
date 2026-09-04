@@ -43,8 +43,6 @@ status in (APPROVED, EXPORTED)
 장비별 총 리포트 수 = 해당 장비의 APPROVED 또는 EXPORTED 리포트 수
 ```
 
----
-
 ### 3.2 오류 유형별 발생 횟수
 
 하나의 리포트에는 여러 오류 유형이 연결될 수 있다.
@@ -62,8 +60,6 @@ ARM_STUCK
 SENSOR_ERROR +1
 ARM_STUCK +1
 ```
-
----
 
 ### 3.3 장비별 오류 재발률
 
@@ -86,40 +82,68 @@ SENSOR_ERROR 재발률 = 4 / 10 * 100 = 40.0%
 
 ---
 
-## 4. 분석 API 범위
+## 4. 구현 완료 API
 
-Milestone 5에서 구현할 API는 다음과 같다.
-
-| API                                   | 설명                 |
-|---------------------------------------|--------------------|
-| GET /api/analytics/error-types        | 전체 오류 유형별 발생 횟수 조회 |
-| GET /api/analytics/devices/{deviceId} | 특정 장비의 분석 통계 조회    |
-| GET /api/analytics/devices            | 전체 장비별 분석 요약 조회    |
+| Method | URL                               | 설명                 | 권한             |
+|--------|-----------------------------------|--------------------|----------------|
+| GET    | /api/analytics/error-types        | 전체 오류 유형별 발생 횟수 조회 | MANAGER, ADMIN |
+| GET    | /api/analytics/devices/{deviceId} | 특정 장비의 분석 통계 조회    | MANAGER, ADMIN |
+| GET    | /api/analytics/devices            | 전체 장비별 분석 요약 조회    | MANAGER, ADMIN |
 
 ---
 
-## 5. 전체 오류 유형 통계
+## 5. 전체 오류 유형 통계 API
 
 전체 오류 유형 통계는 모든 분석 대상 리포트를 기준으로 오류 유형별 발생 횟수를 집계한다.
 
-응답에는 다음 정보를 포함한다.
+```http
+GET /api/analytics/error-types
+```
 
-| 필드          | 설명       |
-|-------------|----------|
-| errorTypeId | 오류 유형 ID |
-| code        | 오류 유형 코드 |
-| name        | 오류 유형 이름 |
-| count       | 발생 횟수    |
+### 응답 필드
+
+| 필드             | 설명                  |
+|----------------|---------------------|
+| errorTypeId    | 오류 유형 ID            |
+| code           | 오류 유형 코드            |
+| name           | 오류 유형 이름            |
+| count          | 발생 횟수               |
+| recurrenceRate | 전체 오류 유형 통계에서는 null |
 
 정렬 기준은 발생 횟수 내림차순이다.
 
+### 응답 예시
+
+```json
+[
+  {
+    "errorTypeId": 1,
+    "code": "SENSOR_ERROR",
+    "name": "센서 오류",
+    "count": 8,
+    "recurrenceRate": null
+  },
+  {
+    "errorTypeId": 3,
+    "code": "ARM_STUCK",
+    "name": "차단봉 걸림",
+    "count": 6,
+    "recurrenceRate": null
+  }
+]
+```
+
 ---
 
-## 6. 특정 장비 분석 통계
+## 6. 특정 장비 분석 통계 API
 
 특정 장비 분석 API는 하나의 장비를 기준으로 리포트 수와 오류 유형별 발생 횟수, 재발률을 반환한다.
 
-응답에는 다음 정보를 포함한다.
+```http
+GET /api/analytics/devices/{deviceId}
+```
+
+### 응답 필드
 
 | 필드               | 설명           |
 |------------------|--------------|
@@ -129,7 +153,7 @@ Milestone 5에서 구현할 API는 다음과 같다.
 | totalReportCount | 분석 대상 리포트 수  |
 | errorTypeStats   | 오류 유형별 통계 목록 |
 
-오류 유형별 통계에는 다음 정보를 포함한다.
+### errorTypeStats 필드
 
 | 필드             | 설명          |
 |----------------|-------------|
@@ -139,13 +163,44 @@ Milestone 5에서 구현할 API는 다음과 같다.
 | count          | 발생 횟수       |
 | recurrenceRate | 해당 장비 내 재발률 |
 
+### 응답 예시
+
+```json
+{
+  "deviceId": 1,
+  "serialNo": "GATE-2024-001",
+  "location": "서울 강남구 A주차장 입구",
+  "totalReportCount": 7,
+  "errorTypeStats": [
+    {
+      "errorTypeId": 1,
+      "code": "SENSOR_ERROR",
+      "name": "센서 오류",
+      "count": 7,
+      "recurrenceRate": 100.0
+    },
+    {
+      "errorTypeId": 3,
+      "code": "ARM_STUCK",
+      "name": "차단봉 걸림",
+      "count": 6,
+      "recurrenceRate": 85.7
+    }
+  ]
+}
+```
+
 ---
 
-## 7. 전체 장비 분석 요약
+## 7. 전체 장비 분석 요약 API
 
 전체 장비 분석 요약 API는 모든 장비의 분석 통계를 목록으로 반환한다.
 
-응답에는 다음 정보를 포함한다.
+```http
+GET /api/analytics/devices
+```
+
+### 응답 필드
 
 | 필드                         | 설명                     |
 |----------------------------|------------------------|
@@ -159,6 +214,22 @@ Milestone 5에서 구현할 API는 다음과 같다.
 
 정렬 기준은 총 리포트 수 내림차순이다.
 
+### 응답 예시
+
+```json
+[
+  {
+    "deviceId": 1,
+    "serialNo": "GATE-2024-001",
+    "location": "서울 강남구 A주차장 입구",
+    "totalReportCount": 7,
+    "topErrorTypeName": "센서 오류",
+    "topErrorTypeCount": 7,
+    "topErrorTypeRecurrenceRate": 100.0
+  }
+]
+```
+
 ---
 
 ## 8. 권한 정책
@@ -171,11 +242,17 @@ Milestone 5에서 구현할 API는 다음과 같다.
 | MANAGER    |        가능 |
 | ADMIN      |        가능 |
 
+SecurityConfig에서는 다음 경로에 대해 MANAGER, ADMIN 권한만 허용한다.
+
+```text
+/api/analytics/**
+```
+
 ---
 
 ## 9. 예외 처리 기준
 
-### 존재하지 않는 장비 조회
+### 9.1 존재하지 않는 장비 조회
 
 ```http
 HTTP/1.1 404
@@ -190,7 +267,7 @@ HTTP/1.1 404
 }
 ```
 
-### 권한 없는 사용자 접근
+### 9.2 권한 없는 사용자 접근
 
 ```http
 HTTP/1.1 403
@@ -198,7 +275,7 @@ HTTP/1.1 403
 
 TECHNICIAN 권한 사용자는 분석 API를 호출할 수 없다.
 
-### 분석 대상 데이터가 없는 경우
+### 9.3 분석 대상 데이터가 없는 경우
 
 분석 대상 데이터가 없는 경우 404가 아니라 count 0 또는 빈 목록으로 응답한다.
 
@@ -216,7 +293,7 @@ TECHNICIAN 권한 사용자는 분석 API를 호출할 수 없다.
 
 ---
 
-## 10. 구현 예정 클래스
+## 10. 구현 클래스
 
 | 클래스                            | 역할                      |
 |--------------------------------|-------------------------|
@@ -227,3 +304,70 @@ TECHNICIAN 권한 사용자는 분석 API를 호출할 수 없다.
 | DeviceAnalyticsSummaryResponse | 전체 장비 분석 요약 응답 DTO      |
 | ErrorTypeStatisticsProjection  | 오류 유형별 집계 Projection    |
 | DeviceReportCountProjection    | 장비별 리포트 수 집계 Projection |
+| RepairReportRepository         | 장비별 리포트 수 집계 쿼리 제공      |
+| ReportErrorTypeRepository      | 오류 유형별 발생 횟수 집계 쿼리 제공   |
+
+---
+
+## 11. 구현 완료 항목
+
+- 분석 대상 리포트 기준 정의
+- 오류 유형별 발생 횟수 집계
+- 특정 장비의 분석 대상 리포트 수 집계
+- 특정 장비의 오류 유형별 발생 횟수 집계
+- 장비별 오류 재발률 계산
+- 전체 장비별 분석 요약 조회
+- 분석 API 권한 설정
+- 분석 API Swagger 문서화
+- 존재하지 않는 장비 조회 예외 처리
+
+---
+
+## 12. 테스트 명령어
+
+### 12.1 전체 오류 유형별 발생 횟수 조회
+
+```bash
+curl -i "http://localhost:8080/api/analytics/error-types" \
+  -H "Authorization: Bearer $MANAGER_TOKEN"
+```
+
+### 12.2 특정 장비 분석 통계 조회
+
+```bash
+curl -i "http://localhost:8080/api/analytics/devices/1" \
+  -H "Authorization: Bearer $MANAGER_TOKEN"
+```
+
+### 12.3 전체 장비 분석 요약 조회
+
+```bash
+curl -i "http://localhost:8080/api/analytics/devices" \
+  -H "Authorization: Bearer $MANAGER_TOKEN"
+```
+
+### 12.4 TECHNICIAN 접근 차단 확인
+
+```bash
+curl -i "http://localhost:8080/api/analytics/devices" \
+  -H "Authorization: Bearer $TECH_TOKEN"
+```
+
+기대 응답:
+
+```http
+HTTP/1.1 403
+```
+
+### 12.5 존재하지 않는 장비 조회 확인
+
+```bash
+curl -i "http://localhost:8080/api/analytics/devices/99999" \
+  -H "Authorization: Bearer $MANAGER_TOKEN"
+```
+
+기대 응답:
+
+```http
+HTTP/1.1 404
+```

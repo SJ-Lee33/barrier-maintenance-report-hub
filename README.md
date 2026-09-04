@@ -454,6 +454,10 @@ GROUP BY, COUNT, DATE_TRUNC, 기간 조건, 재발률 계산, 페이징, 인덱�
 - 인덱스 설계
 - 통계 결과 샘플
 
+**구현 문서**
+
+- [통계 API 구현 보고서](docs/analytics.md)
+
 ---
 
 ### Milestone 6. 테스트 코드 작성
@@ -588,3 +592,4 @@ uploads/ 디렉터리는 Git에 포함하지 않는다.
 
 - [사진 업로드 및 파일 관리 트러블슈팅](docs/image-upload.md)
 - [Export 기능 문서](docs/export.md)
+- [통계 API 구현 보고서](docs/analytics.md)
