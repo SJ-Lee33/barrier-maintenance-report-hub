@@ -231,6 +231,8 @@ public class RepairReportService {
 		RepairReport repairReport = repairReportRepository.findByIdAndDeletedFalse(reportId)
 			.orElseThrow(() -> new NotFoundException("리포트를 찾을 수 없습니다."));
 
+		validateReportOwner(repairReport, currentUser);
+
 		ReportStatus fromStatus = repairReport.getStatus();
 
 		repairReport.resubmit();
