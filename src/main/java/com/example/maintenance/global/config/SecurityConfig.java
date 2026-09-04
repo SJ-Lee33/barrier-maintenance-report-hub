@@ -33,7 +33,8 @@ public class SecurityConfig {
 				.requestMatchers(
 					"/swagger-ui/**",
 					"/swagger-ui.html",
-					"/v3/api-docs/**"
+					"/v3/api-docs/**",
+					"/uploads/report-images/**"
 				).permitAll()
 
 				// Auth
@@ -41,6 +42,7 @@ public class SecurityConfig {
 					"/api/auth/signup",
 					"/api/auth/login"
 				).permitAll()
+				
 				.requestMatchers("/api/auth/me").authenticated()
 
 				// User 관리: ADMIN만
@@ -64,7 +66,7 @@ public class SecurityConfig {
 
 				// ReportImage 조회: 로그인 사용자
 				.requestMatchers(HttpMethod.GET, "/api/repair-reports/*/images").authenticated()
-				
+
 				// RepairReport 상태 변경: TECHNICIAN
 				.requestMatchers(HttpMethod.PATCH, "/api/repair-reports/*/submit").hasRole("TECHNICIAN")
 				.requestMatchers(HttpMethod.PATCH, "/api/repair-reports/*/resubmit").hasRole("TECHNICIAN")

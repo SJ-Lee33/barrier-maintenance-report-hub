@@ -136,6 +136,7 @@ public class GlobalExceptionHandler {
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 	}
 
+	// TODO: 파일 크기 초과했으면 경고만 하지 말고 압축 진행하면 어떨까
 	@ExceptionHandler(MaxUploadSizeExceededException.class)
 	public ResponseEntity<ErrorResponse> handleMaxUploadSizeExceededException(MaxUploadSizeExceededException exception,
 		HttpServletRequest request) {
