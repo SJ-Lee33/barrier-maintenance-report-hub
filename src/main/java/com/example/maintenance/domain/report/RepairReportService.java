@@ -10,6 +10,7 @@ import com.example.maintenance.domain.device.DeviceRepository;
 import com.example.maintenance.domain.errortype.ErrorType;
 import com.example.maintenance.domain.errortype.ErrorTypeRepository;
 import com.example.maintenance.domain.export.CsvExportFileGenerator;
+import com.example.maintenance.domain.export.ExcelExportFileGenerator;
 import com.example.maintenance.domain.export.ExportMappingService;
 import com.example.maintenance.domain.export.JsonExportFileGenerator;
 import com.example.maintenance.domain.export.ReportExport;
@@ -303,7 +304,10 @@ public class RepairReportService {
 				externalReport,
 				exportFilePath.filePath()
 			);
-			case EXCEL -> throw new IllegalArgumentException("아직 지원하지 않는 Export 형식입니다.");
+			case EXCEL -> excelExportFileGenerator.generate(
+				externalReport,
+				exportFilePath.filePath()
+			);
 		}
 
 		reportExportRepository.save(
@@ -366,4 +370,5 @@ public class RepairReportService {
 	private final ExportFileStorage exportFileStorage;
 	private final JsonExportFileGenerator jsonExportFileGenerator;
 	private final CsvExportFileGenerator csvExportFileGenerator;
+	private final ExcelExportFileGenerator excelExportFileGenerator;
 }
