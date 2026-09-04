@@ -1,7 +1,6 @@
 package com.example.maintenance.domain.report;
 
 import java.util.List;
-import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,9 +9,12 @@ import com.example.maintenance.domain.device.Device;
 import com.example.maintenance.domain.device.DeviceRepository;
 import com.example.maintenance.domain.errortype.ErrorType;
 import com.example.maintenance.domain.errortype.ErrorTypeRepository;
+import com.example.maintenance.domain.export.ExportMappingService;
 import com.example.maintenance.domain.export.ExportType;
+import com.example.maintenance.domain.export.JsonExportFileGenerator;
 import com.example.maintenance.domain.export.ReportExport;
 import com.example.maintenance.domain.export.ReportExportRepository;
+import com.example.maintenance.domain.export.dto.ExternalReportExportResponse;
 import com.example.maintenance.domain.history.ReportStatusHistory;
 import com.example.maintenance.domain.history.ReportStatusHistoryRepository;
 import com.example.maintenance.domain.report.dto.RepairReportCreateRequest;
@@ -28,6 +30,8 @@ import com.example.maintenance.domain.technician.TechnicianRepository;
 import com.example.maintenance.domain.user.User;
 import com.example.maintenance.global.error.ForbiddenException;
 import com.example.maintenance.global.error.NotFoundException;
+import com.example.maintenance.global.storage.ExportFileStorage;
+import com.example.maintenance.global.storage.ExportFileStorage.ExportFilePath;
 
 import lombok.RequiredArgsConstructor;
 
@@ -174,8 +178,6 @@ public class RepairReportService {
 		RepairReport repairReport = repairReportRepository.findByIdAndDeletedFalse(reportId)
 			.orElseThrow(() -> new NotFoundException("리포트를 찾을 수 없습니다."));
 
-		validateReportOwner(repairReport, currentUser);
-
 		ReportStatus fromStatus = repairReport.getStatus();
 
 		repairReport.approve(currentUser);
@@ -284,17 +286,29 @@ public class RepairReportService {
 
 		repairReport.export(currentUser);
 
-		String fileUrl = generateExportFileUrl(
+		ExportFilePath exportFilePath = exportFileStorage.createExportFilePath(
 			repairReport.getId(),
 			request.exportType()
 		);
+
+		if (request.exportType() == ExportType.JSON) {
+			ExternalReportExportResponse externalReport =
+				exportMappingService.toExternalReport(repairReport);
+
+			jsonExportFileGenerator.generate(
+				externalReport,
+				exportFilePath.filePath()
+			);
+		} else {
+			throw new IllegalArgumentException("아직 지원하지 않는 Export 형식입니다.");
+		}
 
 		reportExportRepository.save(
 			new ReportExport(
 				repairReport,
 				request.exportType(),
 				currentUser,
-				fileUrl
+				exportFilePath.fileUrl()
 			)
 		);
 
@@ -309,16 +323,6 @@ public class RepairReportService {
 		);
 
 		return toResponse(repairReport);
-	}
-
-	private String generateExportFileUrl(Long reportId, ExportType exportType) {
-		String extension = switch (exportType) {
-			case JSON -> "json";
-			case CSV -> "csv";
-			case EXCEL -> "xlsx";
-		};
-
-		return "/exports/reports/" + reportId + "/" + UUID.randomUUID() + "." + extension;
 	}
 
 	private RepairReportResponse toResponse(RepairReport repairReport) {
@@ -353,4 +357,9 @@ public class RepairReportService {
 			.map(ReportExportResponse::from)
 			.toList();
 	}
+
+	// 내보내기
+	private final ExportMappingService exportMappingService;
+	private final ExportFileStorage exportFileStorage;
+	private final JsonExportFileGenerator jsonExportFileGenerator;
 }
