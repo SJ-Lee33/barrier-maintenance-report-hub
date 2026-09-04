@@ -504,8 +504,10 @@ JWT_ACCESS_TOKEN_VALIDITY=3600000
 
 ### 12.3 PostgreSQL 실행
 
+로컬에서 애플리케이션은 `./run-local.sh`로 실행하고, PostgreSQL만 Docker로 실행하려면 다음 명령어를 사용합니다.
+
 ```bash
-docker compose up -d
+docker compose up -d db
 ```
 
 컨테이너 실행 확인:
@@ -517,7 +519,7 @@ docker ps
 PostgreSQL 접속 확인:
 
 ```bash
-docker exec -it barrier-report-postgres psql -U local_user -d barrier_report
+docker compose exec db psql -U local_user -d barrier_report
 ```
 
 ### 12.4 애플리케이션 실행
@@ -547,21 +549,91 @@ Bearer {accessToken}
 
 ---
 
-## 13. 기본 테스트 계정
+## 13. Docker 실행 가이드
+
+이 프로젝트는 Docker Compose를 사용해 Spring Boot 애플리케이션과 PostgreSQL을 함께 실행할 수 있습니다.
+
+### 13.1 사전 빌드
+
+현재 Dockerfile은 Gradle 빌드 결과물인 jar 파일을 컨테이너에 복사하는 방식입니다.  
+따라서 Docker 이미지를 빌드하기 전에 먼저 jar 파일을 생성합니다.
+
+```bash
+./gradlew clean build
+```
+
+### 13.2 Docker Compose 실행
+
+```bash
+docker compose up --build
+```
+
+정상 실행되면 Spring Boot 애플리케이션과 PostgreSQL 컨테이너가 함께 실행됩니다.
+
+| 서비스 | 역할                 |
+|-----|--------------------|
+| app | Spring Boot 애플리케이션 |
+| db  | PostgreSQL 데이터베이스  |
+
+### 13.3 Swagger UI 접속
+
+```text
+http://localhost:8080/swagger-ui/index.html
+```
+
+### 13.4 Docker 환경 설정
+
+Docker 실행 시에는 `docker` profile을 사용합니다.
+
+```yaml
+SPRING_PROFILES_ACTIVE: docker
+```
+
+Docker Compose 내부에서는 PostgreSQL을 `localhost`가 아니라 Compose service name인 `db`로 접근합니다.
+
+```text
+jdbc:postgresql://db:5432/barrier_report
+```
+
+### 13.5 로컬 실행과 Docker 실행 차이
+
+| 구분             | 로컬 실행            | Docker 실행                   |
+|----------------|------------------|-----------------------------|
+| 실행 명령어         | `./run-local.sh` | `docker compose up --build` |
+| DB host        | `localhost`      | `db`                        |
+| Spring profile | 기본/local 설정      | `docker`                    |
+| 실행 방식          | 로컬 JVM에서 app 실행  | app/db 컨테이너 함께 실행           |
+| 파일 저장 경로       | 프로젝트 루트 하위       | 컨테이너 내부 `/app` 하위 및 볼륨 마운트  |
+
+### 13.6 Docker 실행 확인
+
+Docker 환경에서 Swagger가 정상 접속되고, 로그인 API 호출 시 표준 JSON 응답이 반환되면 app 컨테이너와 db 컨테이너 연결이 정상 동작하는 것으로 볼 수 있습니다.
+
+초기 Docker DB는 기존 로컬 DB와 별도 환경이므로, 기존 로컬 테스트 계정이 존재하지 않을 수 있습니다.
+
+```bash
+curl -i -X POST "http://localhost:8080/api/auth/login" \
+  -H "Content-Type: application/json" \
+  -d '{"email":"tech01@example.com","password":"password1234"}'
+```
+
+---
+
+## 14. 기본 테스트 계정
 
 로컬 개발 환경에서는 초기 데이터로 다음 계정을 사용할 수 있습니다.
 
-| 역할         | 이메일                    | 비밀번호           |
-|------------|------------------------|----------------|
-| TECHNICIAN | `tech3@example.com`    | `password1234` |
-| MANAGER    | `manager1@example.com` | `password1234` |
+| 역할         | 이메일                     | 비밀번호           |
+|------------|-------------------------|----------------|
+| TECHNICIAN | `tech01@example.com`    | `password1234` |
+| MANAGER    | `manager01@example.com` | `password1234` |
 
 ### 로그인 예시
 
 ```bash
 curl -X POST "http://localhost:8080/api/auth/login" \
   -H "Content-Type: application/json" \
-  -d '{"email":"tech3@example.com","password":"password1234"}'
+  -d '{"email":"tech01@example.com","password":"password1234"}'
 ```
 
 응답의 `accessToken`을 API 요청에 사용합니다.
@@ -573,9 +645,9 @@ curl "http://localhost:8080/api/auth/me" \
 
 ---
 
-## 14. 주요 API 사용 흐름
+## 15. 주요 API 사용 흐름
 
-### 14.1 기사 리포트 작성 및 제출
+### 15.1 기사 리포트 작성 및 제출
 
 ```text
 TECHNICIAN 로그인
@@ -584,7 +656,7 @@ TECHNICIAN 로그인
 → PATCH /api/repair-reports/{reportId}/submit
 ```
 
-### 14.2 관리자 검토 및 승인
+### 15.2 관리자 검토 및 승인
 
 ```text
 MANAGER 로그인
@@ -592,7 +664,7 @@ MANAGER 로그인
 → PATCH /api/repair-reports/{reportId}/approve
 ```
 
-### 14.3 외부 제출용 Export
+### 15.3 외부 제출용 Export
 
 ```text
 MANAGER 로그인
@@ -601,7 +673,7 @@ MANAGER 로그인
 → /exports/reports/{reportId}/{filename} 접근
 ```
 
-### 14.4 분석 API 조회
+### 15.4 분석 API 조회
 
 ```text
 MANAGER 로그인
@@ -612,7 +684,7 @@ MANAGER 로그인
 
 ---
 
-## 15. 테스트 실행
+## 16. 테스트 실행
 
 ### 전체 테스트
 
@@ -652,7 +724,7 @@ test-exports/
 
 ---
 
-## 16. 로컬 파일 저장 경로
+## 17. 로컬 파일 저장 경로
 
 ### 이미지 업로드 파일
 
@@ -689,20 +761,21 @@ test-exports/
 
 ---
 
-## 17. 마일스톤 진행 현황
+## 18. 마일스톤 진행 현황
 
-| Milestone   | 내용                               | 상태 |
-|-------------|----------------------------------|----|
-| Milestone 1 | 기본 도메인 및 CRUD API 구현             | 완료 |
-| Milestone 2 | JWT 인증, Role 권한, 리포트 상태 워크플로우 구현 | 완료 |
-| Milestone 3 | 이미지 업로드 및 파일 관리                  | 완료 |
-| Milestone 4 | JSON / CSV / Excel Export 기능 구현  | 완료 |
-| Milestone 5 | 장비별 오류 재발률 및 분석 API 구현           | 완료 |
-| Milestone 6 | 테스트 코드 및 품질 개선                   | 완료 |
+| Milestone   | 내용                                  | 상태 |
+|-------------|-------------------------------------|----|
+| Milestone 1 | 기본 도메인 및 CRUD API 구현                | 완료 |
+| Milestone 2 | JWT 인증, Role 권한, 리포트 상태 워크플로우 구현    | 완료 |
+| Milestone 3 | 이미지 업로드 및 파일 관리                     | 완료 |
+| Milestone 4 | JSON / CSV / Excel Export 기능 구현     | 완료 |
+| Milestone 5 | 장비별 오류 재발률 및 분석 API 구현              | 완료 |
+| Milestone 6 | 테스트 코드 및 품질 개선                      | 완료 |
+| Milestone 7 | Docker 실행 환경 및 GitHub Actions CI 구성 | 완료 |
 
 ---
 
-## 18. 구현 문서
+## 19. 구현 문서
 
 - [사진 업로드 및 파일 관리 구현 보고서](docs/image-upload.md)
 - [Export 기능 문서](docs/export.md)
@@ -711,38 +784,38 @@ test-exports/
 
 ---
 
-## 19. 프로젝트에서 중점적으로 다룬 부분
+## 20. 프로젝트에서 중점적으로 다룬 부분
 
-### 19.1 역할 기반 책임 분리
+### 20.1 역할 기반 책임 분리
 
 현장 기사와 관리자의 업무를 Role 기반으로 분리했습니다.  
 기사는 본인 리포트를 작성하고 제출하며, 관리자는 제출된 리포트를 검토하고 승인합니다.
 
-### 19.2 상태 전이 기반 업무 흐름 구현
+### 20.2 상태 전이 기반 업무 흐름 구현
 
 리포트 상태를 단순 문자열로 처리하지 않고, 도메인 메서드를 통해 상태 전이를 제한했습니다.  
 이를 통해 승인 전 Export, 반려 전 재제출 등 잘못된 업무 흐름을 방지했습니다.
 
-### 19.3 파일 메타데이터와 실제 파일 저장 분리
+### 20.3 파일 메타데이터와 실제 파일 저장 분리
 
 이미지와 Export 파일은 로컬 파일 시스템에 저장하고, DB에는 접근 가능한 URL과 메타데이터를 저장했습니다.  
 이를 통해 추후 S3, R2 등 외부 스토리지로 확장하기 쉬운 구조를 고려했습니다.
 
-### 19.4 외부 제출용 데이터 변환 계층 분리
+### 20.4 외부 제출용 데이터 변환 계층 분리
 
 내부 `RepairReport` 구조를 그대로 외부에 노출하지 않고, Export 전용 DTO로 변환한 뒤 JSON, CSV, Excel 생성기가 각각 파일을 생성하도록 구성했습니다.
 
-### 19.5 운영 데이터 기반 분석 API
+### 20.5 운영 데이터 기반 분석 API
 
 승인 또는 Export 완료된 리포트만 분석 대상으로 삼아, 검증된 데이터 기준의 장비별 오류 재발률과 오류 유형별 발생 횟수를 제공합니다.
 
-### 19.6 전역 예외 응답 통일
+### 20.6 전역 예외 응답 통일
 
 비즈니스 예외, 권한 예외, 유효성 검증 실패, JSON 변환 실패를 전역 예외 처리기로 통일해 API 응답 일관성을 높였습니다.
 
 ---
 
-## 20. 향후 개선 방향
+## 21. 향후 개선 방향
 
 - Testcontainers 기반 PostgreSQL 테스트 환경 도입
 - GitHub Actions 기반 CI 구성
