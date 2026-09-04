@@ -40,3 +40,7 @@ uploads/
 
 # export
 exports/
+
+# test
+test-uploads/
+test-exports/
