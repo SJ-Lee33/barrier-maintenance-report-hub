@@ -9,8 +9,8 @@ import com.example.maintenance.domain.device.Device;
 import com.example.maintenance.domain.device.DeviceRepository;
 import com.example.maintenance.domain.errortype.ErrorType;
 import com.example.maintenance.domain.errortype.ErrorTypeRepository;
+import com.example.maintenance.domain.export.CsvExportFileGenerator;
 import com.example.maintenance.domain.export.ExportMappingService;
-import com.example.maintenance.domain.export.ExportType;
 import com.example.maintenance.domain.export.JsonExportFileGenerator;
 import com.example.maintenance.domain.export.ReportExport;
 import com.example.maintenance.domain.export.ReportExportRepository;
@@ -291,16 +291,19 @@ public class RepairReportService {
 			request.exportType()
 		);
 
-		if (request.exportType() == ExportType.JSON) {
-			ExternalReportExportResponse externalReport =
-				exportMappingService.toExternalReport(repairReport);
+		ExternalReportExportResponse externalReport =
+			exportMappingService.toExternalReport(repairReport);
 
-			jsonExportFileGenerator.generate(
+		switch (request.exportType()) {
+			case JSON -> jsonExportFileGenerator.generate(
 				externalReport,
 				exportFilePath.filePath()
 			);
-		} else {
-			throw new IllegalArgumentException("아직 지원하지 않는 Export 형식입니다.");
+			case CSV -> csvExportFileGenerator.generate(
+				externalReport,
+				exportFilePath.filePath()
+			);
+			case EXCEL -> throw new IllegalArgumentException("아직 지원하지 않는 Export 형식입니다.");
 		}
 
 		reportExportRepository.save(
@@ -358,8 +361,9 @@ public class RepairReportService {
 			.toList();
 	}
 
-	// 내보내기
+	// Export 의존성
 	private final ExportMappingService exportMappingService;
 	private final ExportFileStorage exportFileStorage;
 	private final JsonExportFileGenerator jsonExportFileGenerator;
+	private final CsvExportFileGenerator csvExportFileGenerator;
 }
