@@ -55,6 +55,9 @@ public class SecurityConfig {
 				// Device 관리: MANAGER, ADMIN
 				.requestMatchers("/api/devices/**").hasAnyRole("MANAGER", "ADMIN")
 
+				// 통계 API들
+				.requestMatchers("/api/analytics/**").hasAnyRole("MANAGER", "ADMIN")
+
 				// ErrorType 조회: 로그인 사용자
 				.requestMatchers("/api/error-types/**").authenticated()
 
