@@ -691,14 +691,14 @@ test-exports/
 
 ## 17. 마일스톤 진행 현황
 
-| Milestone   | 내용                               | 상태   |
-|-------------|----------------------------------|------|
-| Milestone 1 | 기본 도메인 및 CRUD API 구현             | 완료   |
-| Milestone 2 | JWT 인증, Role 권한, 리포트 상태 워크플로우 구현 | 완료   |
-| Milestone 3 | 이미지 업로드 및 파일 관리                  | 완료   |
-| Milestone 4 | JSON / CSV / Excel Export 기능 구현  | 완료   |
-| Milestone 5 | 장비별 오류 재발률 및 분석 API 구현           | 완료   |
-| Milestone 6 | 테스트 코드 및 품질 개선                   | 진행 중 |
+| Milestone   | 내용                               | 상태 |
+|-------------|----------------------------------|----|
+| Milestone 1 | 기본 도메인 및 CRUD API 구현             | 완료 |
+| Milestone 2 | JWT 인증, Role 권한, 리포트 상태 워크플로우 구현 | 완료 |
+| Milestone 3 | 이미지 업로드 및 파일 관리                  | 완료 |
+| Milestone 4 | JSON / CSV / Excel Export 기능 구현  | 완료 |
+| Milestone 5 | 장비별 오류 재발률 및 분석 API 구현           | 완료 |
+| Milestone 6 | 테스트 코드 및 품질 개선                   | 완료 |
 
 ---
 
